@@ -1,113 +1,206 @@
-# 声音与成片检查
+# Starter Project: Technical Foundation, Not a Production Template
 
-## 配乐与音效
+Initialization produces a 10-second, 3-shot **technical demo** that proves only one thing: "real components mount → timeline → screenshot at any moment → MP4" pipeline works end to end. It deliberately has no visual style — the production film's frame design system, shots, and techniques are all written fresh in `DIRECTION.md` for this product.
 
-先按 [配乐创作与音效查找](audio-sourcing.md) 完成选材：音乐默认用代码原创，音效先找与产品/动作相符的录音素材，缺哪一项才用内置音效补哪一项。先确定音乐气质、节拍和收束位置，再安排动作。原案例使用 120 BPM；其他产品按实际分镜选择速度、旋律和配器，不要求同一首曲子。
+## Running
 
-建立与 `plan.json` 一致的 `audio.cues`：`at / actionId / file / gain / role`。`at` 是影片绝对秒数；动作的 `at` 是相对镜头开始的秒数，cue 对应 `shot.start + action.at`。音效落在动作发生点，而非机械地加在每个镜头开头。选中用轻 click/pop，结构变化才用 whoosh，通知用能被识别的提示音，结尾给一次收束。
-
-许可要区分“能用于成片”和“能随模板重新分发原音频”。这个 skill 不捆绑原案例的 Pixabay 录音，也不携带商业字体。将音频下载进当前视频项目时记录来源及许可，不把项目许可自动视为 skill 的再分发许可。
-
-## 从“写了音效”到“真的听得见”
-
-每个核心功能组选一个最有反馈感的状态变化（选中、打开、完成、通知），将对应 action 标为 `soundRequired: true`。不是每个字入场都加声，但不能只在最后放个音就跳过中间所有关键动作。完成/通知使用可辨认的双音叮咚或确认音；不要只有 whoosh。
-
-声音检查分三步：先单独听 `sfx-stem.wav`，确认关键事件有音效；再听 master，确认没有被配乐淹没；最后听编码后的 MP4，确认剪辑/导出没有漏掉。只检查文件存在或音轨数量都不够。有能力试听时按动作逐项检查；无法试听要准确标明，不假装已通过听感验收。
-
-找不到合适音效时，直接从 [内置音效目录](../assets/audio/sfx/) 复制所缺的 click/click-alt、pop、toggle、typing、ding-dong、success、error、resolve、whoosh 或 sweep。这些是现成的原创 WAV，不需要先运行生成器；需要调整音色时才改 `make_sfx.py`，输出到新目录。
-
-**增益要按实测电平设。** 内置音效峰值约 −20 dBFS，录音素材接近 0 dBFS；同样的 gain，前者会被配乐盖住。用 `scripts/sfx_landmarks.py` 查每个文件的峰值电平和落点。混音后可以逐个 cue 比较音效轨与压低后音乐在出现那一刻的峰值：音效不应明显低于音乐。
+Requires Python 3, Node.js, FFmpeg. First run the environment check per SKILL.md; install missing items per [Dependency Installation](onboarding.md).
 
 ```sh
-# 将代码原创配乐输出到 assets/music.wav。
-# 按 audio-sourcing.md 查找音效，缺项复制内置 WAV；再修改 plan 的动作和 cue。
+python3 <skill-dir>/scripts/init_project.py --output <video-dir> --style repo --repo <repo-dir>
+cd <video-dir>
+python3 <skill-dir>/scripts/check_environment.py --project . --engine browser
+npm run build
+node stills.mjs evidence/stills 1.5 5 8.5          # Batch still frames in one session, also prints page errors and API requests
+node render.mjs --from 4 --to 7 --output renders/draft.mp4   # Partial draft, no audio needed
+node render.mjs --silent-demo --output renders/technical-demo.mp4
+npm run preview                                     # Browser console: await seek(4) or playFilm()
+node cover.mjs                                      # Export 3:4 / 4:3 / 16:9 covers from cover/cover.html (see references/cover.md)
+```
+
+Production export:
+
+```sh
 python3 <skill-dir>/scripts/mix_audio.py plan.json
+node render.mjs --audio assets/master.wav --output renders/final.mp4
+python3 <skill-dir>/scripts/check_delivery.py plan.json --video renders/final.mp4 --mix-report evidence/audio-mix.json
 ```
 
-`mix_audio.py` 输出 `assets/sfx-stem.wav`、`assets/music-ducked.wav`、`assets/master.wav` 和 `evidence/audio-mix.json`，对混音做双遍响度处理。配乐太响时应调低音乐 gain，音效太轻应调整对应 cue。现有 HyperFrames/Remotion 混音器也可以使用，但保留等价的素材、音效事件、混音来源与最终输出证据。
+Exports frame-by-frame stills (JPEG middle frames, x264 encoding). A 50-second film with WebGL and blur filters typically takes 2–4 minutes; render a few seconds first to estimate. `--silent-demo` is only for the technical demo; for a user-requested silent production film, set `audioRequired:false` and record `audioExceptionReason`.
 
-配置结构（示意；时间应来自实际镜头）：
+## Runtime Architecture
 
-```json
-{
-  "audioRequired": true,
-  "sfxRequired": true,
-  "audio": {
-    "music": {"file": "assets/music.wav", "gain": 0.65},
-    "cues": [{"at": 12.2, "actionId": "task-finished", "file": "assets/sfx/ding-dong.wav", "gain": 0.7, "role": "sfx"}]
-  }
-}
+```
+src/client.jsx        Mounts <Film>, waits for fonts and fixture data, then runs each shot's builder, exposes window.seek / __filmReady
+src/engine.js         seek(t): React clock → interaction-driven → GSAP master timeline → shot visibility → onRender canvas
+src/film-store.js     useShotState(select): components read discrete state by in-shot time (which step, how many characters typed)
+src/fake-api.js       Fixed clock, fixed random seed, path-based fixture fetch, silent EventSource/WebSocket
+src/fixtures/api.js   API fixtures; derive from the product's own constants/directories where possible so names and icons are real
+src/product-context.jsx  Providers the product shell would normally supply (i18n, theme, tooltip, routing/panel context)
+src/kit/              Split + reveal (text split entrance), Cursor + paintCursor, offsetCenter / screenCenterAt, setFieldValue / typed / ensureOpen
+src/shots/index.js    plan.json shot id → view component + builder
+src/film.css          This film's frame design system (type scale, layout), plus mechanisms required for frame-by-frame rendering
+src/adapters/         Static stand-ins for framework runtimes like next/image, next/navigation, etc., aliased as needed
 ```
 
-对应动作例如：镜头从 12 秒开始，`actions` 中有 `{"id":"task-finished","at":0.2,"action":"任务完成通知出现","soundRequired":true}`。cue 应与该动作对齐，听觉落点与动作通常控制在 1 帧内，检查上限为 2 帧。用户明确要无音效时记录 `sfxRequired:false` 和 `audioExceptionReason`；全静音设 `audioRequired:false`。这类例外遵从用户，不由模型自行决定。
+`seek(t)` is a pure function of t — seeking forward, backward, or rendering a single frame all produce consistent results:
 
-## 音效响时给它让位置
+1. `flushSync` pushes time to React. Components use `useShotState(l => stageAt(l, [...]))` and re-render only when discrete state changes, e.g. a tool step appears or a reply gains characters.
+2. Runs drivers registered via `onDrive(id, fn)` — the **real interactions**: typing into real input fields (`setFieldValue` + `typed`), clicking real buttons to open real overlays (`ensureOpen`). Drivers must be idempotent: compute expected state from time first, only touch the DOM when it differs. Return a Promise when overlay positioning needs to settle; `render.mjs` will await it.
+3. `master.seek(t)`: all GSAP animations hang on this single paused master timeline, placed using absolute film time.
+4. Show/hide shots by time (with 0.8s overlap on each side for transition blending).
+5. Calls per-frame drawing registered via `onRender(id, fn)`: Three.js, 2D canvas, time-dependent style calculations.
 
-默认开启 `audio.ducking`。原来只有固定音乐 gain，重要提示仍可能被盖住；现在按 cue 预先降低音乐，音效结束后再平滑恢复。不是整首曲子一律变小，也不是突然静音。
+### Writing a Shot
 
-下表是本 skill 的试听起点，**不是官方音频标准**；根据音乐密度和音效音色调整：
-
-| 声音职责 | 配乐压低 | 起音前压低 / 主要保持 / 恢复 |
-| --- | --- | --- |
-| 点击、切换、轻弹出 | 约 3–3.5 dB | 40ms / 100–120ms / 200–240ms |
-| 输入细节 | 约 2.5 dB | 40ms / 350ms / 250ms |
-| 转场 | 约 4 dB | 40ms / 160–200ms / 300–350ms |
-| 完成、通知、重要确认 | 约 5–6 dB | 40ms / 350–450ms / 350–400ms |
-| 品牌收尾 | 约 5 dB | 40ms / 550ms / 450ms |
-
-混音脚本使用确定的音量包络；多个音效重叠时取当前最深的压低，不把衰减层层相乘。逐项可调：
-
-```json
-{"audio":{"ducking":{"enabled":true}},"cueExample":{"kind":"ding-dong","duck":{"db":6,"attack":0.04,"hold":0.45,"release":0.4}}}
+```jsx
+// src/shots/agent.jsx (illustrative; names and structure follow this film's needs)
+export function AgentView() { /* Real component + this film's layout; GSAP targets use stable wrappers */ }
+export const buildAgent = tl => {
+  const s = shot('agent');
+  // 1. Measure first (layout already exists): offsetCenter(el, root), or screenCenterAt(tl, t, el) for 3D-transformed screen position
+  // 2. Then place animations on tl: tl.fromTo(el, from, to, s.start + 0.4)
+  // 3. Register per-frame work: onDrive('agent', local => ...), onRender('agent', local => ...)
+};
 ```
 
-`cueExample` 是字段示意，实际放在 `audio.cues[]`。全局设置会覆盖类型预设，cue 的 `duck` 再覆盖全局；没有理由不要给所有声音同样强度。听到音乐不断抽动时减少不必要的 cue、减小压低或延长恢复。音效仍被掩盖时先检查音色冲突、调整 BGM 与 SFX 相对音量，再看局部压低，不只提高最终 master 音量。
+- Shot start/end times live only in `plan.json`; code reads them via `shot(id)` — single source of truth for timing.
+- GSAP `fromTo` writes start values at build time, so measurement must happen before placing animations.
+- GSAP timelines are thenable: `await tl` waits for the timeline to finish, but a paused master timeline never ends. Builders can be async functions, but do not await the timeline itself.
+- Nodes that React re-renders or conditionally renders should not be direct GSAP targets: wrap them in a stable container to animate.
+- Micro-animations in the product (motion/framer-motion, CSS transitions) compete with the film clock for state: `film.css` freezes CSS animations; products using motion libraries should enable `MotionGlobalConfig.skipAnimations` in `client.jsx`. For things that need to keep moving (spinning loading icons), set transforms by time in `onRender`.
+- Background effects can reference and adapt `assets/fx-lab/`, see [Visual Device Vocabulary](visual-vocabulary.md).
 
-若改用实时侧链，FFmpeg `sidechaincompress` 用第二路信号控制第一路的压缩，需调 threshold/ratio/attack/release；本工具选择已知 cue 的音量自动化，更容易预先让位和重复验证。滤镜语法依据 [FFmpeg volume](https://ffmpeg.org/ffmpeg-filters.html#volume) 与 [sidechaincompress](https://ffmpeg.org/ffmpeg-filters.html#sidechaincompress)，延迟依据 [adelay](https://ffmpeg.org/ffmpeg-filters.html#adelay)。
+### First-Frame Poster
 
-## 卡点和声音的变化
+Openings typically start from a blank canvas, but platforms grab the first frame as a thumbnail. The fix: overlay a still frame of the completed opening state on the topmost layer, fully opaque for the first 0.3 seconds (≈ 9 frames), then fade out over 0.3 seconds. The underlying opening animation still starts from 0s — no timeline or audio changes needed.
 
-1. 听/分析实际音乐，确定 BPM 与第一拍时间；节奏不固定时记下实际拍点，不编一个 120 BPM。主要转场可对重拍，轻操作不必全对重拍。
-2. 图像和声音一起调整时间。`cue.at` 是文件开始，`syncOffset` 是文件内部的听觉落点，因此 `cue.at + syncOffset = shot.start + action.at`。落点用 `scripts/sfx_landmarks.py` 实测：点击类取起音点，whoosh/冲击取峰值（它们要比画面先开始）。
-3. 使用节拍网格时填 `audio.beatGrid:{bpm,offset}`；需要对拍的 cue 标 `onBeat:true`，可用 `beatDivision:1|2|4` 对四分/八分/十六分音符。混音记录会报告与动作、最近拍点相差多少帧；只报告，不悄悄挪动音效造成音画错位。
-4. 30–60 秒影片一般选 4–6 种职责：选择/确认、弹出/切换、键入、空间转场、完成/通知、收尾。类别服务画面，不为满足数量虚构异常或通知。短片可更少。
-5. 连续点击可用 click/click-alt 做轻微音色变化，输入声是有节奏的短簇，转场音只留给画面结构变化，叮咚保留给值得注意的状态。不要所有字出现都“叮”一下。
-6. 最后分别听音乐轨、音效轨、完整混音及最终 MP4；检查提示声的第一下是否被盖住、拖尾是否被切断、节奏是否拥挤。
+In the starter project, the same DOM is driven by the GSAP master timeline and cannot simultaneously sit at t=0 and at the completion moment, so the poster uses a real rendered still frame:
 
-## 混音
+1. After the opening is built, pick the moment when the opening section is complete and all titles are visible, export a still frame, and place it in `public/` (`build.mjs` copies it to `dist`):
+   ```sh
+   node stills.mjs public/poster 5.9 && mv public/poster/t005.90.png public/poster.png && rmdir public/poster
+   ```
+2. Add `<img id="poster" src="poster.png" alt="" />` at the end of `<main>` in `film.jsx`, styled to fill the frame with `z-index` above all shots, then `npm run build`.
+3. In the opening shot's builder, attach the fadeout to the master timeline. Do not use `onRender`: it only runs near the shot — jumping directly to a later section would leave the poster covering everything.
+   ```js
+   tl.fromTo('#poster', {opacity: 1}, {opacity: 0, duration: 0.3, ease: 'none'}, 0.3);
+   ```
 
-音乐应听得见但不疲劳；无配音短片可把最终混音约 -16 LUFS、true peak 不高于 -1 至 -1.5 dBTP 当起点，并依据平台要求和听感调整。不同平台/题材不强制同一数值。有配音时给人声留空间，根据听感做 ducking。
+When the opening changes, re-export the still frame or the poster and film will not match. For films where the view itself is a pure function of time (renders directly from `t`), you can skip the still frame and instead mount a second `<Opening t={completionTime} />` as a poster layer within 0.6 seconds — same principle.
 
-需要标准化时可用 FFmpeg loudnorm 双遍处理：先测量，读取 measured_I/TP/LRA/thresh/offset，再把测量结果带入第二遍；不要仅靠峰值归一化判断听感。最终 AAC 编码后重新测 true peak，因为编码可能产生新峰值。报告 `normalization.normalization_type` 保存第二遍 loudnorm 实际采用的 linear/dynamic 模式。音乐超过片长 1 秒时脚本输出警告并写入报告；自动截断和淡出后需要确认结尾，必要时重新编曲。
+## Connecting to the Repo
 
-核对音乐与画面同长度、片头不突响、片尾自然结束、音效不削波、不突然静音。用播放器试听最终文件；若环境只能测量，明确未完成试听，不能称为“已经听过”。
+1. In shot views, directly import the feature's original business components and composition layers. Do not wire up just a few basic buttons and hand-write the rest of the UI.
+2. Read the product's root layout and app shell; write the providers the components depend on into `product-context.jsx`, all using static values. Missing providers cause immediate runtime errors (`xxx must be used within yyy`) — add them one by one per error.
+3. For components that fetch data in effects, provide fixtures in `fixtures/api.js` by path. The `api` list output by `stills.mjs` shows the actual requested paths — use it to find gaps.
+4. Compile the product's real styles into `src/product.css` (below), preserving theme, fonts, icons, and state rules. When the product has a dark theme, `ProductContext dark` enables it directly.
+5. Place brand assets, fonts, and public icons in `public/` (copied to the web root); fix root-path references in components (e.g. `/provider-icons/...`).
+6. The build outputs `evidence/component-imports.json`; record reuse evidence per shot, see [Component Pipeline](component-pipeline.md).
 
-## 自动检查
+`--style default` / `hybrid` copies fallback style components; `repo` does not. The starter demo is laid out at 1920×1080; changing the aspect ratio requires re-layout.
+
+### Parse Configuration
+
+```js
+// integration.config.mjs
+import path from 'node:path';
+const repo = '/absolute/path/to/product', video = path.resolve('.');
+export default {
+  repoDir: repo,
+  aliases: {
+    '@': path.join(repo, 'src'),
+    'next/image': path.join(video, 'src/adapters/next-image.jsx'),     // Only add when components actually use it
+  },
+  external: [], loaders: {}, define: {},
+  esbuild: {},   // Other esbuild options, e.g. tsconfigRaw
+};
+```
+
+The builder outputs a browser IIFE bundle: resolves dependencies from the product's `node_modules` first; React/ReactDOM both point to the video project's copy (two React instances cause `Cannot read properties of null (reading 'useContext')`). When product dependencies are missing, install only pinned display dependencies in the video project. Resolve paths for strictly isolated layouts like pnpm according to the actual workspace mapping. Dependencies with top-level await cannot be bundled into the IIFE: switch to their synchronous entry point, or change the build to ESM.
+
+Monorepo workspace packages that export TS source directly: alias the package name to its `src`; for packages with subpath `exports`, read their `package.json` to generate a subpath → source file alias table. When the product has `verbatimModuleSyntax` enabled, type imports are preserved as-is and may drag server-side runtime into the browser bundle; use `esbuild: {tsconfigRaw: {compilerOptions: {verbatimModuleSyntax: false}}}` to relax only this display build.
+
+When an alias needs to "replace one export in a module, keep everything else" (e.g. redirecting an overlay portal into the shot), the adapter can first `export * from '<real file absolute path>'`, then separately export the same-named replacement.
+
+### Next / Tailwind Style Chain
+
+Tailwind source CSS must be compiled first. Tailwind v4: create `src/product.input.css`, import the product's real CSS entry, and scan both product and video source:
+
+```css
+@import "/absolute/path/to/product/src/app/globals.css";
+@source "/absolute/path/to/product/src";
+@source "./";
+```
 
 ```sh
-python3 <skill-dir>/scripts/check_delivery.py plan.json --video renders/final.mp4 --mix-report evidence/audio-mix.json > evidence/delivery-check.json
-ffmpeg -i renders/final.mp4 -af loudnorm=I=-16:TP=-1.5:LRA=8:print_format=json -f null -
+npx @tailwindcss/cli -i src/product.input.css -o src/product.css   # Version matches the product
+npm run build
 ```
 
-正式模式（`demo:false`）中，脚本还会拒绝缺中英标题、缺字体分工、关键动作没有 cue、仅有 BGM、混音记录过期或素材哈希变化。脚本不能从 MP4 中自动分离并判断音效听感；内置导出器会核对传入 master 与混音记录的哈希，其他导出器需自行验证轨道接线。
+When shot code adds new Tailwind classes, recompile. Tailwind v3 uses the matching version's CLI and a config inheriting the product's theme/plugins; `content` includes both product and video source. `url(...)` fonts/images in the product CSS must be findable in `dist/`. Sources: [esbuild nodePaths](https://esbuild.github.io/api/#node-paths), [Tailwind CLI](https://tailwindcss.com/docs/installation/tailwind-cli).
 
-脚本发现时间缺口/重叠、错误规格、缺少音轨、卖点无来源会失败；阅读时长和类型过于单一发出提醒。不能据此宣布卖点真实、视觉无裁切或音乐好听。
+## Plan Fields
 
-`--video` 还会给出 `pacing`（静止帧比例、最长静止段、硬切次数），只用来定位该回看的片段。大面积纯色背景、小区域运动容易被算成静止；不要为了数字加入无意义动画。画面审阅方法见 [审片](review.md)。
+- `demo`: true for the technical demo; set to false once production content is ready.
+- `product / width / height / fps / duration / style / audioRequired`: project specs.
+- `typography`: default `mode:bilingual`, specify `zhFont / enFont` separately, `zhStyle:sans-serif`; when the user specifies monolingual or other fonts, record the rationale in `exceptionReason`.
+- `shots[]`: `id, start, end, type, headlineEn, headline, plainExplanation, description, descriptionAt, claim, source, component, actions`. Shot implementation in code follows the shot table in `DIRECTION.md`; the plan records timing, facts, and audio — the two must be consistent.
+- Shots with `claim` true must provide `source`. Format: `file:docs/release.md` (relative to video project) or `repo:src/features/panel.tsx` (relative to `plan.repo`), supporting `:line-number` / `#Lline-number`; bare paths check the video project first then `plan.repo`; URLs, version tags, commit references are for fact-checking. Brand openings do not need fabricated sources.
+- `component`: actual source path or adapter; can be null for title cards.
+- `actions`: unique `id`, `at` relative to shot start, action description, `soundRequired`.
+- `audio.music / audio.cues`: cue `at` is the film-absolute time of file start; `syncOffset` is the auditory landing point within the file, satisfying `at + syncOffset = action time`. Measure landing points with `scripts/sfx_landmarks.py` — do not guess. Optional `onBeat` / `beatDivision` references `audio.beatGrid`.
+- `descriptionAt`: time relative to shot start when the description text appears, used for reading-time hints.
 
-## 最终人工检查
+Re-mix when the shot list or score changes; production export verifies the hash of plan vs. master. Generic placeholder components carry `data-skill-placeholder`; in production mode the build rejects placeholder content still visible on screen.
 
-| 检查对象 | 具体看什么 |
-| --- | --- |
-| 叙事 | 第一次看能说出有哪些更新、对自己有什么用 |
-| 阅读 | 中文单独读也知道操作对象、动作、结果；没有泛泛口号；说明出现够早 |
-| 标题 | 英文有实际语义且处于标题层级；中文统一无衬线；两种语言的字体分别加载 |
-| 画面 | 首帧/中间/末帧、所有转场前后；没有误空屏、裁切、跳动、裂图 |
-| 品牌 | 正确产品名、正式完整 Logo、与仓库一致的视觉识别 |
-| 事实 | 功能状态有证据；示例不冒充客户成果或跑分 |
-| 组件 | 原业务组件及样式实际上镜；构建图、状态驱动、来源清单与静帧一致；没有以基础控件或 tokens 复刻冒充整项功能复用 |
-| 音频 | BGM 与关键动作 SFX 都可闻；完成/通知反馈清楚；动作对齐；不刺耳、不爆音、结尾完整 |
-| 链接 | 按用户要求隐藏 URL/CTA，遮挡在缩放移动中不泄漏 |
-| 一致性 | 预览和 MP4 都检查，最终修改确实进入导出文件 |
+## Integration Regression
 
-用最终 MP4 抽取关键帧，而不仅复用导出前截图。交付时附正确文件路径与清楚的成片状态，不把技术样片、未混音版、早期版本误当最终版。
+After modifying the builder, engine, or kit, run:
+
+```sh
+python3 -m unittest discover -s <skill-dir>/tests
+node <skill-dir>/tests/integration.mjs --modules <video-dir>/node_modules
+```
+
+The integration test constructs a product repo in a temp directory and verifies: dependencies and aliases that exist only in the product resolve, CSS assets copy, component effects receive data through fixture APIs, GSAP state is correct when seeking forward and backward, and WebGL renders in headless export. It does not auto-install dependencies.
+
+
+# Review: Watch as You Build, Then Watch the Final Film
+
+Automated checks prove only that structure and files are correct. Whether it looks good requires watching the picture — this page covers how to watch efficiently and recurring issues that surface during actual production.
+
+## Three Checkpoints
+
+1. **After building each shot**: `node stills.mjs evidence/stills <3–4 moments within this shot>`, compare still frames against the shot table in `DIRECTION.md`: is the protagonist immediately obvious? Is the font size large enough? Is anything overlapping? `stills.mjs` also prints page errors and API paths actually requested by components — missing fixtures can be caught here.
+2. **After the first full export**:
+   - 2 fps contact sheet for rhythm and composition: `ffmpeg -i final.mp4 -vf "fps=2,scale=384:-1,tile=6x9" -frames:v 1 sheet.png` (one sheet per half).
+   - 10 fps strip for each transition: `ffmpeg -ss <0.4s before cut> -t 1 -i final.mp4 -vf "fps=10,scale=320:-1,tile=10x1" -frames:v 1 cut.png`.
+   - Full-size frames for information-dense shots to confirm UI text is legible.
+3. **After modifications**: re-watch only the changed shot and its surrounding transitions, then do one final full pass.
+
+## Common Issues
+
+| What you see | Typical cause | Fix |
+|---|---|---|
+| Title and UI overlap, text crammed in corner | No type scale or safe area, or title column too narrow | Go back to the frame design system; give the title column a fixed width and font size; shorten copy instead of shrinking font |
+| Last Chinese character or punctuation drops alone to the next line | Text width exceeds by just a bit | Shorten by a word or two, or adjust column width; do not rely on `nowrap` to let text overflow |
+| UI on camera shows tiny text, panels have large blank areas | Product shown at desktop size; panel height set for fullscreen | Scale up the product root node; fit panel height to content; tighten blank areas |
+| Zoom landing point is off | Manually calculating landing point under 3D tilt/perspective | Use `screenCenterAt` to measure the real screen position at the corresponding moment |
+| Shot targets the wrong row, or targets the top of the frame | When matching text to find the target row, matched an earlier similar row, or searched before that row finished typing | Search only after the row appears completely; use a unique marker (e.g. status field) to find the row; if not found, report an error directly — do not let −1 become coordinates |
+| Gray flash when cutting from light to dark | Long crossfade | Hard cut, or blur-out the previous shot's protagonist before cutting |
+| Overlay position broken, cannot follow zoom | Portal mounted on body; panel is in 3D rotation when opening | Point the portal container inside the shot; no 3D rotation during opening |
+| 3+ seconds of complete stillness | No follow-up after the last action | Add a slow push-in or state continuation (e.g. new message arriving), or shorten the shot |
+| All elements use the same entrance | Only one reveal type used | Design separate entrances for protagonist, supporting info, and background; vary between adjacent shots |
+| First frame is blank background color; social platform thumbnail is all white or all black | Opening starts from blank canvas, first frame has nothing yet | Show the opening's completed state as the poster frame for the first 5–10 frames, then fade out and enter normally; `check_delivery.py`'s `firstFrames` reports blank frames |
+| Every film looks the same | Directly reusing the case study or previous film's techniques | Go back to sections 3–5 of `DIRECTION.md`, re-derive from the product |
+| Background effect steals focus from the UI | Atmosphere layer contrast too high, or placed behind a dense UI | Keep backgrounds quiet during feature shots; save effects for title cards, brand, and transitions |
+
+## Metrics Are Only Hints
+
+`check_delivery.py --video` reports still-frame ratio, longest still segment, and hard-cut count (`pacing`). These are meant to prompt "go look at that section": reading pauses are necessary, and small motion on large dark backgrounds also counts as "still." **Do not add meaningless motion to improve the numbers, and do not treat hitting the numbers as the film looking good.**
+
+## Sound
+
+- When playback is possible, listen section by section: `sfx-stem.wav` alone, then the master, then the encoded MP4.
+- When playback is not possible, state this honestly and verify structure with visible evidence: spectrogram (`ffmpeg -i music.wav -lavfi showspectrumpic=s=1600x500:scale=log:fscale=log music-spec.png`) and per-second loudness to confirm impact points, pauses, builds, and cadences land at the right times. Whether bass is too heavy is obvious on the spectrogram.

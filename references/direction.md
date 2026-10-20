@@ -1,91 +1,91 @@
-# 影片方向：先定方向，再写代码
+# Film Direction: Define Direction First, Then Write Code
 
-决定一支片子好不好看的，是写代码之前的设计：它讲什么、看起来是什么气质、每个镜头的主角是谁、字多大、界面放大几倍。把这些写进 `DIRECTION.md`（初始化时已生成问题模板）再动手。
+What determines whether a film looks good is the design work done before writing code: what it says, what mood it carries, what each shot's subject is, how large the type is, how many times the interface is zoomed. Write all of this into `DIRECTION.md` (the question template is generated during initialization) before touching any code.
 
-两次对照说明了这一步的分量：只按清单和指标做的版本，落拍率 100%，画面却挤、字小、像幻灯片；先写视觉规范和镜头表的版本，同一产品、同一套组件，观感完全不同（见 [案例复盘](case-study.md)）。
+Two comparisons illustrate the weight of this step: a version built only from checklists and metrics hit 100% beat alignment but looked cramped, had tiny type, and resembled a slideshow; a version that started with a visual spec and shot list — same product, same components — looked completely different (see [case study](case-study.md)).
 
-## 1. 拆参考（用户给了参考视频/图片时）
+## 1. Deconstruct References (When the User Provides Reference Videos/Images)
 
-1. 抽帧看全片：`ffmpeg -i ref.mp4 -vf "fps=1,scale=400:-1,tile=6x8" -frames:v 1 sheet.png`，再对关键时刻截全尺寸帧。
-2. 逐个列出手法：它是什么、在表达什么（速度感？秩序？连接？）、出现在哪一段、持续多久。
-3. 学"做法"，不抄"样子"：参考片的颜色、图形、字体属于它的品牌。写清楚本片是否采用、改写成什么，以及改写的依据。
+1. Extract frames for the full film: `ffmpeg -i ref.mp4 -vf "fps=1,scale=400:-1,tile=6x8" -frames:v 1 sheet.png`, then capture full-size frames for key moments.
+2. List each device one by one: what it is, what it expresses (speed? order? connection?), where in the film it appears, how long it lasts.
+3. Learn the "method," don't copy the "look": the reference film's colors, shapes, and typeface belong to its brand. State clearly whether this film adopts them, how they are adapted, and the rationale for the adaptation.
 
-## 2. 提炼产品气质
+## 2. Distill Product Character
 
-从仓库和用户输入回答，不要凭印象：
+Answer from the repo and user input — don't guess:
 
-- **谁在用、在什么情境下用、用起来是什么感觉**：冷静专业、轻快、温暖、硬核、安静……
-- **设计语言**：色板、字体、圆角、阴影、明暗主题（产品有暗色主题就把它当候选）、图标风格。来源写到文件路径。
-- **母题候选**：能直接变成画面的产品元素。
-  - 标志的几何构造（点阵、线条、字母形）
-  - 核心界面本身（输入框、列表、画布、时间线）
-  - 产品处理的数据形态（文本流、图表、文件树、波形、地图）
-  - 领域隐喻（写作 → 纸与墨；设计 → 构造线与控制点；音乐 → 波形；财务 → 走势线）
-  - 产品名字的字面意象
+- **Who uses it, in what context, how does it feel to use**: calm and professional, light, warm, hardcore, quiet…
+- **Design language**: color palette, typefaces, border radius, shadows, light/dark themes (if the product has a dark theme, include it as a candidate), icon style. Cite file paths as sources.
+- **Motif candidates**: product elements that can be turned directly into visuals.
+  - Logo geometry (dot grid, lines, letterforms)
+  - The core interface itself (input fields, lists, canvas, timeline)
+  - Data shapes the product handles (text streams, charts, file trees, waveforms, maps)
+  - Domain metaphors (writing → paper and ink; design → construction lines and control points; music → waveforms; finance → trend lines)
+  - Literal imagery from the product name
 
-## 3. 提出三个方向，沿不同的轴拉开
+## 3. Propose Three Directions, Spread Across Different Axes
 
-每个方向在下表每个轴上各选一个，彼此要**至少在三个轴上不同**，而且各自内部要自洽。选项只是举例，可以自己加：
+Each direction picks one option per axis in the table below. They must differ on **at least three axes** from each other, and each must be internally consistent. Options are examples only — add your own:
 
-| 轴 | 可选取向（举例） |
+| Axis | Example Options |
 |---|---|
-| 底色与光 | 黑色舞台 + 发光；纸白 + 墨线；品牌色大色块；明暗交替；真实环境照片感 |
-| 字体声音 | 超细大字；粗重冲击；衬线编辑感；等宽技术感；圆润亲和 |
-| 母题来源 | 标志几何；界面本身；数据形态；领域隐喻；用户场景 |
-| 镜头语言 | 平面排版编辑；3D 舞台（倾斜、环绕、飞越）；微距特写；一镜到底；录屏质感 |
-| 转场词汇 | 硬切卡拍；穿越缩放；遮罩擦除；形状变形；匹配剪辑（前一镜的元素变成后一镜的元素） |
-| 节奏 | 发布会式从容；预告片式紧凑；轻快俏皮；安静叙事 |
-| 声音 | 电子脉冲；钢琴与弦；打击乐主导；氛围铺底；用户提供的曲子 |
+| Base color & light | Black stage + glow; paper white + ink lines; large brand-color blocks; alternating light/dark; real-environment photo feel |
+| Typeface voice | Ultra-thin large type; heavy impact; serif editorial; monospace technical; rounded friendly |
+| Motif source | Logo geometry; the interface itself; data shapes; domain metaphors; user scenarios |
+| Shot language | Flat editorial layout; 3D stage (tilt, orbit, flyover); macro close-up; single continuous take; screen-recording texture |
+| Transition vocabulary | Hard cut on beat; zoom-through; mask wipe; shape morph; match cut (element from one shot becomes element in the next) |
+| Pacing | Keynote-leisurely; trailer-tight; playful; quiet narrative |
+| Sound | Electronic pulses; piano and strings; percussion-led; ambient pad; user-provided music |
 
-然后按产品气质、受众和发布平台选一个，写下理由。用户想先看方向时，把三个方向和 3–6 张关键静帧给用户选，否则直接继续。
+Then pick one based on product character, audience, and distribution platform, and write down the reason. When the user wants to see directions first, present the three directions with 3–6 key still frames for selection; otherwise continue directly.
 
-## 4. 本片专属手法（3–5 个）
+## 4. Film-Specific Devices (3–5)
 
-每个手法都必须能写成"因为产品有 X，所以用 Y"。写不出 X 的手法，删掉。
+Every device must be writable as "because the product has X, we use Y." If you can't write the X, delete the device.
 
-一些推导的例子（只说明推导方式，不是菜单）：
+Some derivation examples (illustrating the method, not a menu):
 
-| 产品有什么 | 可以长成什么 |
+| What the Product Has | What It Can Become |
 |---|---|
-| 点阵构成的标志 | 粒子从远处汇聚，落进点阵的每一格 |
-| 接入很多服务/插件 | 成员沿一个倾斜的环绕着核心界面转 |
-| 面向开发者、以代码为材料 | 由产品自己的代码组成的字符场 |
-| 笔记/写作产品 | 字逐笔写出，纸张纹理，墨迹晕开 |
-| 数据分析产品 | 真实图表的路径逐段画出，数字滚动落定 |
-| 设计工具 | 构造线、控制点、网格吸附 |
-| 协作产品 | 多个光标同时进入，状态实时合并 |
+| A logo built from a dot grid | Particles converge from afar, landing in each cell of the grid |
+| Many service/plugin integrations | Members orbit around the core interface on a tilted plane |
+| Developer-facing, code as material | A character field composed of the product's own code |
+| A note-taking/writing product | Characters written stroke by stroke, paper texture, ink bleeding |
+| A data analytics product | Real chart paths drawn segment by segment, numbers rolling to rest |
+| A design tool | Construction lines, control points, grid snapping |
+| A collaboration product | Multiple cursors entering simultaneously, states merging in real time |
 
-[视觉手法词汇](visual-vocabulary.md) 列了更多手法及其实现要点；`assets/fx-lab/` 有几个可改写的样例。
+[Visual Device Vocabulary](visual-vocabulary.md) lists more devices and their implementation notes; `assets/fx-lab/` has several adaptable examples.
 
-## 5. 反重复
+## 5. Anti-Repetition
 
-- **跨片**：动手前看看同一工作区里之前用本 skill 做的片子（相邻目录下的 `DIRECTION.md`、`evidence/contact-sheet.png`）以及 [案例复盘](case-study.md)，列出它们的开场、章节处理、背景手法和配乐。新片至少在三个轴上与最近一支不同，并且不原样复用它的开场手法、章节手法和背景效果。
-- **片内**：不要所有元素都用同一种入场；相邻镜头换取景（全景 ↔ 特写 ↔ 大字）或换明暗；同一种转场不连用三次以上。
-- **案例不是模板**：CodePilot 片子的星空开场、银白光弧、Ask/Switch/Extend 章节字卡，属于那个产品和那一次的推导。另一个产品直接照搬，就是千篇一律。
+- **Across films**: Before starting, look at films made previously in the same workspace with this skill (adjacent directories' `DIRECTION.md`, `evidence/contact-sheet.png`) and the [case study](case-study.md). List their openings, chapter treatments, background devices, and score. The new film must differ on at least three axes from the most recent one, and must not reuse its opening device, chapter device, or background effect verbatim.
+- **Within a film**: Don't give every element the same entrance. Alternate adjacent shots between framing (wide ↔ close-up ↔ large type) or light/dark. Don't use the same transition more than three times in a row.
+- **Case studies are not templates**: The CodePilot film's starfield opening, silver-white light arcs, and Ask/Switch/Extend chapter title cards belong to that product and that derivation. Another product copying them directly produces sameness.
 
-## 6. 叙事结构，按内容选
+## 6. Narrative Structure, Chosen by Content
 
-默认的"钩子 → 品牌 → 功能证明 ×3–5 → 小功能快切 → 收尾"只是其中一种。也可以：
+The default "hook → brand → feature proof ×3–5 → quick-cut small features → closing" is just one option. Alternatives:
 
-- 问题 → 转折 → 解决（适合解决明确痛点的更新）
-- 完整做完一件真实任务（适合 Agent、工作流类产品）
-- 一镜到底穿过产品的各个区域（适合空间感强的界面）
-- 前后对比（适合性能、改版）
-- 倒数清单（适合很多个小更新）
-- 一天的使用（适合日常工具）
+- Problem → turning point → solution (fits updates that solve a clear pain point)
+- Completing one real task end to end (fits agent/workflow products)
+- A single continuous take through the product's areas (fits spatial interfaces)
+- Before/after comparison (fits performance, redesigns)
+- Countdown list (fits many small updates)
+- A day of use (fits daily tools)
 
-## 7. 画面规范（frame design system）
+## 7. Frame Design System
 
-从产品推导，写成具体数字：
+Derive from the product, write as concrete numbers:
 
-- 画幅、帧率、底色、安全区（重要内容避开底部约 13%）。
-- 字号阶梯：主标题、次标题、说明，中英文分别给字号和字重；字体来自产品或有授权的字体，中英文分别指定。
-- 界面上镜倍数：让界面正文在成片里 ≥ 22px（1080p）。倍数 ≈ 22 ÷ 产品正文像素。完整窗口只作为交代全局的建立镜头。
-- 明暗主题：产品有暗色主题且片子走暗调时，直接用产品的暗色主题。
-- 动效语法：入场方式、缓动族、时长范围，以及本片**不用**什么（例如"不用回弹""不用彩虹色"）。
+- Aspect ratio, frame rate, base color, safe area (keep important content clear of the bottom ~13%).
+- Type scale: main title, subtitle, description — give font size and weight separately for Chinese and English; typefaces come from the product or licensed fonts, specified separately for Chinese and English.
+- Interface on-camera zoom: ensure body text in the interface renders at ≥ 22px in the final film (1080p). Zoom ≈ 22 ÷ product body-text pixel size. Full window views serve only as establishing shots for context.
+- Light/dark theme: when the product has a dark theme and the film goes dark, use the product's dark theme directly.
+- Motion grammar: entrance methods, easing families, duration ranges, and what this film **does not** use (e.g., "no bounce-back," "no rainbow colors").
 
-## 8. 镜头表
+## 8. Shot List
 
-每个镜头写：时间、主角（只有一个）、画面与动作（带子拍时间）、上屏文案、声音。一个镜头里至少有一次状态变化或镜头运动；超过 2.5 秒完全不动，只能是在给观众读字。镜头长度有长有短：开场、快切短，功能证明长。
+For each shot, write: time, subject (only one), visuals and action (with sub-shot timing), on-screen copy, sound. Each shot must contain at least one state change or camera movement; if it's completely still for more than 2.5 seconds, it can only be giving the audience time to read. Shot lengths should vary: opening and quick cuts are short, feature proofs are longer.
 
-写完镜头表再开始搭镜头。每搭完一个镜头就出静帧，和镜头表对照（见 [审片](review.md)）。
+Finish the shot list before building any shots. After building each shot, produce a still frame and cross-check it against the shot list (see [review](review.md)).

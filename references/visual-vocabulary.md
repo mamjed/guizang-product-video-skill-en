@@ -1,78 +1,78 @@
-# 视觉手法词汇
+# Visual Device Vocabulary
 
-按作用分组列出常用手法。每条写它表达什么、应该从产品的哪一点推导、实现要点和常见陷阱。**这是词汇，不是菜单**：一支片子挑 3–5 个能从产品推导出来的，其余不用。选之前先读 [影片方向](direction.md)。
+Common devices grouped by function. Each entry states what it expresses, what product aspect it should derive from, implementation notes, and common pitfalls. **This is a vocabulary, not a menu**: a film picks 3–5 devices derivable from the product; the rest are unused. Read [film direction](direction.md) before choosing.
 
-所有手法都要满足同一条技术约束：画面只由时间决定（seek-safe）。GSAP 动画挂在主时间轴上；canvas/WebGL 写成 `render(t)` 纯函数，注册到 `onRender`；随机数固定种子。`assets/fx-lab/` 有标 ★ 的几种手法的可改写样例。
+All devices must satisfy the same technical constraint: the frame is determined only by time (seek-safe). GSAP animations are attached to the main timeline; canvas/WebGL is written as a `render(t)` pure function registered to `onRender`; random numbers use fixed seeds. `assets/fx-lab/` has adaptable examples for devices marked ★.
 
-## 开场与钩子
+## Opening & Hook
 
-| 手法 | 表达 | 从哪里推导 | 实现要点 | 陷阱 |
+| Device | Expresses | Derive From | Implementation | Pitfall |
 |---|---|---|---|---|
-| 流线场 / 穿越 ★ | 速度、进入一个世界 | 产品的"快"或"多" | Three.js 线段，位置 = 速度的积分 | 平静的产品用它显得浮夸 |
-| 槽位轮换 | 痛点的重复（今天 A 明天 B） | 用户真实在换的东西 | 硬切或极短模糊切，间隔逐步加快 | 淡入淡出会失去节奏感 |
-| 真实界面微距 | 直接进入产品 | 最有代表性的一个控件 | 真实组件放大 3–4 倍，景深虚化其余部分 | 放大后文字断行、溢出 |
-| 一句话逐字书写 | 安静、有分量 | 写作、对话类产品 | 逐字或逐笔，配光标 | 句子太长，观众等不及 |
-| 数据先行 | 用结果开场 | 有可证明的数字 | 数字滚动 + 图表路径画出 | 没有来源的数字 |
+| Flow lines / fly-through ★ | Speed, entering a world | Product's "fast" or "many" | Three.js line segments, position = integral of velocity | Looks grandiose on a calm product |
+| Slot rotation | Repetition of pain points (today A, tomorrow B) | What users actually swap out | Hard cut or very short blur cut, intervals progressively faster | Crossfade loses the rhythmic feel |
+| Real interface macro | Entering the product directly | The most representative single control | Real component zoomed 3–4×, depth of field blurs the rest | Text wraps/overflows after zoom |
+| Sentence written character by character | Quiet, weighty | Writing/conversation products | Character by character or stroke by stroke, with cursor | Sentence too long — audience loses patience |
+| Data first | Opening with the result | Provable numbers available | Number roll + chart path drawn | Numbers without a source |
 
-## 品牌与标志
+## Brand & Logo
 
-| 手法 | 表达 | 从哪里推导 | 实现要点 | 陷阱 |
+| Device | Expresses | Derive From | Implementation | Pitfall |
 |---|---|---|---|---|
-| 粒子汇聚成形 ★ | 分散的东西归于一处 | 标志本身是几何构造 | 从渲染好的 SVG 取格子（`targetsFromSvg`），粒子落定后换成清晰 SVG | 标志不是几何构造时硬拆 |
-| 构造线与控制点 | 精密、被设计过 | 设计类产品，或标志有网格 | SVG 线条用 `strokeDashoffset` 画出，方形节点弹出 | 线太多、太亮，抢主体 |
-| 字标描边成实 | 从草图到成品 | 字标有特色 | 描边路径画出再填充 | 中文字体路径太复杂 |
-| 挤出 / 等距体块 | 结构、稳重 | 标志有立体潜力 | CSS 3D 叠层或 Three.js 挤出几何 | 过度的光泽材质显廉价 |
-| 形状变形 | 一种东西变成另一种 | 标志和产品界面有形状关联 | SVG path 插值（点数要一致）或遮罩 | 变形中间态很丑 |
+| Particle convergence ★ | Scattered things coming together | Logo itself is geometric | Extract cells from rendered SVG (`targetsFromSvg`), swap to crisp SVG once particles settle | Forcing it when the logo isn't geometric |
+| Construction lines & control points | Precision, designed | Design products, or logo has a grid | SVG lines drawn with `strokeDashoffset`, square nodes pop in | Too many lines, too bright — steals from the subject |
+| Wordmark stroke to fill | From sketch to finished | Distinctive wordmark | Stroke path drawn then filled | Chinese font paths too complex |
+| Extrusion / isometric blocks | Structure, stability | Logo has 3D potential | CSS 3D layered or Three.js extrude geometry | Excessive glossy materials look cheap |
+| Shape morph | One thing becoming another | Logo and product UI share shapes | SVG path interpolation (point counts must match) or mask | Morph intermediate states look ugly |
 
-## 舞台与背景
+## Stage & Background
 
-| 手法 | 表达 | 从哪里推导 | 实现要点 | 陷阱 |
+| Device | Expresses | Derive From | Implementation | Pitfall |
 |---|---|---|---|---|
-| 发光地平线 ★ | 登场、仪式感 | 暗色、高端的产品 | CSS 多层径向渐变 + 暗色本体遮挡 | 连续镜头都用；和浅色产品冲突 |
-| 渐变场 | 情绪、品牌色 | 品牌色丰富的产品 | 慢速移动的大色团（canvas 或 CSS），低对比 | 铺在密集界面后面，看不清 |
-| 字符场 ★ | 代码、数据、底层 | 技术产品，用它自己的代码或数据 | 2D canvas 字符网格 + 噪声亮度，中心留空 | 面向非技术受众时显得冷 |
-| 纸张与墨 | 书写、温度 | 写作、笔记类产品 | 纸纹理 + 墨迹扩散遮罩 | 纹理太重，显脏 |
-| 网格与点阵 | 秩序、工具感 | 设计、数据工具 | 极淡的点或线，随镜头有视差 | 和界面网格打架 |
-| 环境景深 | 真实使用场景 | 硬件、移动端 | 设备模型 + 背景虚化 | 伪造产品没有的硬件 |
+| Glowing horizon ★ | Entrance, ceremony | Dark, premium products | CSS multi-layer radial gradients + dark body occlusion | Used in consecutive shots; clashes with light products |
+| Gradient field | Mood, brand colors | Products with rich brand colors | Slow-moving large color blobs (canvas or CSS), low contrast | Placed behind a dense interface — can't see it |
+| Character field ★ | Code, data, the underlying layer | Technical products, using its own code or data | 2D canvas character grid + noise brightness, center kept empty | Feels cold for non-technical audiences |
+| Paper & ink | Writing, warmth | Writing/note-taking products | Paper texture + ink diffusion mask | Texture too heavy — looks dirty |
+| Grid & dot matrix | Order, tool-like feel | Design/data tools | Very faint dots or lines, parallax with camera | Fights with the interface grid |
+| Environmental depth of field | Real usage scenarios | Hardware, mobile | Device mockup + blurred background | Fabricating hardware the product doesn't have |
 
-## 产品上镜
+## Product On Camera
 
-| 手法 | 表达 | 从哪里推导 | 实现要点 | 陷阱 |
+| Device | Expresses | Derive From | Implementation | Pitfall |
 |---|---|---|---|---|
-| 放大取景 + 推拉 | 让观众看清一件事 | 所有功能镜头 | 摄像机包层用 GSAP 动 x/y/scale；落点先在时间轴上测出来（`screenCenterAt`） | 在 3D 倾斜下手算落点会偏 |
-| 透视倾斜的面板 | 空间感、高级感 | 暗色、层级清楚的界面 | 父层设 `perspective`，面板 `rotationX/Y` 小角度，随时间缓慢变化 | 弹出层（portal）在 3D 变换里定位会错，打开时回到平面 |
-| 平放看板 + 镜头飞越 | 全局、体系 | 有很多卡片或模块的页面 | 整页 `rotationX 50–60°` 抬起到 10–20° | 抬得太快晕；卡片文字太小 |
-| 沿 Z 轴抬起细节 | 在全局中指出重点 | 列表/卡片中的关键项 | 在 `preserve-3d` 的同一容器里给副本加 `translateZ` 和阴影，背景压暗 | 抬起的是手画的而不是真组件 |
-| 环绕 ★ | 很多东西连接到一个核心 | 集成、服务商、插件数量 | 手工投影：深度控制大小、透明度、模糊和层级 | 为了凑满一圈虚构成员 |
-| 光标操作 | 这是可以点的真东西 | 交互类功能 | 光标在产品坐标系里移动，点击落在拍点，真实点击触发状态 | 点击后没有状态变化 |
-| 真实打字与流式输出 | Agent/对话在工作 | 对话、生成类产品 | 用原生 setter 写入真实输入框；回复按时间截断字符 | 整段一次性出现 |
+| Zoom framing + push/pull | Letting the audience see one thing clearly | All feature shots | Camera wrapper animates x/y/scale with GSAP; landing positions measured on the timeline first (`screenCenterAt`) | Manual landing calculation under 3D tilt will be off |
+| Perspective-tilted panels | Spatial depth, premium feel | Dark interfaces with clear hierarchy | Parent sets `perspective`, panels use small `rotationX/Y`, slowly changing over time | Portals misposition under 3D transforms — return to flat when opening |
+| Flat board + camera flyover | Overview, system | Pages with many cards or modules | Entire page `rotationX 50–60°` raised to 10–20° | Raising too fast causes disorientation; card text too small |
+| Lift detail along Z axis | Highlighting within the overview | Key items in a list/card | Add `translateZ` and shadow to a duplicate in the same `preserve-3d` container, dim the background | The lifted element is hand-drawn, not the real component |
+| Orbit ★ | Many things connected to one core | Integrations, services, plugin count | Manual projection: depth controls size, opacity, blur, and layering | Fabricating members just to fill the circle |
+| Cursor interaction | This is a real clickable thing | Interactive features | Cursor moves in product coordinate space, click lands on the beat, real click triggers state | No state change after clicking |
+| Real typing & streaming output | Agent/conversation at work | Conversation/generation products | Write to the real input using native setter; truncate reply characters by time | Entire block appears at once |
 
-## 章节与文字
+## Chapters & Text
 
-| 手法 | 表达 | 从哪里推导 | 实现要点 | 陷阱 |
+| Device | Expresses | Derive From | Implementation | Pitfall |
 |---|---|---|---|---|
-| 章节大字 | 段落分隔、节奏 | 功能可归成几个动词 | 一个词占满画面，1–1.5 秒 | 词没有意义（UPDATE、NEW） |
-| 切片错位 ★ | 信号、打断 | 需要一次强烈换段 | 文字切成横条，从不同偏移弹回；配细光条 | 当成默认标题入场 |
-| 逐字模糊入场 | 精致、呼吸感 | 大多数标题 | `Split` + `reveal`，间隔 0.02–0.05 秒 | 每个元素都用它，变成单调 |
-| 词语快切 | 很多小功能 | 小功能不值得单独成镜 | 每拍一个词，入场方式轮换，配计数 | 每个词停太久，变成字幕 |
-| 光束扫过 | 强调、完成 | 片尾或关键词 | 一条带辉光的横线快速扫过 | 频繁使用失去分量 |
-| 衬线编辑感标题 | 品位、内容型产品 | 内容、阅读类产品 | 衬线英文 + 无衬线中文，字距收紧 | 中文用衬线显得老气 |
+| Chapter large text | Section break, rhythm | Features groupable into verbs | One word fills the frame, 1–1.5 seconds | Meaningless words (UPDATE, NEW) |
+| Slice offset ★ | Signal, interruption | Need a strong section break | Text sliced into horizontal strips, spring back from different offsets; paired with thin light bars | Used as the default title entrance |
+| Character-by-character blur entrance | Refined, breathing | Most titles | `Split` + `reveal`, stagger 0.02–0.05 seconds | Every element uses it — becomes monotonous |
+| Word quick-cut | Many small features | Small features not worth a full shot | One word per beat, rotating entrance methods, with counter | Each word held too long — becomes subtitles |
+| Light beam sweep | Emphasis, completion | End of film or key word | A horizontal line with glow sweeps across quickly | Frequent use loses weight |
+| Serif editorial title | Taste, content products | Content/reading products | Serif English + sans-serif Chinese, tightened tracking | Chinese in serif looks dated |
 
-## 转场
+## Transitions
 
-| 转场 | 用在 | 实现要点 |
+| Transition | Used For | Implementation |
 |---|---|---|
-| 硬切卡拍 | 冲击、明暗突变 | 切点落在拍点上；前一镜先把主角模糊掉，切得更干净 |
-| 穿越缩放 | 从概念进入产品内部 | 前一镜的主角放大并淡出，后一镜从略大缩回 |
-| 推近接续 | 前一镜的某个元素就是下一镜的主角 | 推近到那个元素，下一镜从同一位置、同一大小开始 |
-| 白闪 / 黑场 | 大段落之间 | 0.15–0.25 秒，配冲击音 |
-| 遮罩擦除 | 并列的功能之间 | 形状来自产品（圆角矩形、标志形状） |
+| Hard cut on beat | Impact, sudden light change | Cut point lands on the beat; previous shot blurs its subject first for a cleaner cut |
+| Zoom-through | Moving from concept into the product | Previous shot's subject zooms in and fades out; next shot starts slightly large and pulls back |
+| Push-in continuation | An element from one shot is the next shot's subject | Push in to that element; next shot starts from the same position, same size |
+| White flash / black | Between major sections | 0.15–0.25 seconds, paired with impact sound |
+| Mask wipe | Between parallel features | Shape comes from the product (rounded rectangle, logo shape) |
 
-浅色和深色镜头之间不要做长交叉淡化：中间会出现一片发灰的画面。用硬切，或者先让前一镜的主角模糊退场再切。
+Don't do long cross-dissolves between light and dark shots: a gray patch appears mid-transition. Use a hard cut, or blur the previous shot's subject out first.
 
-## 技术备忘
+## Technical Notes
 
-- **Three.js 在无头导出里**：起步工程的 `render.mjs` / `stills.mjs` 已带 SwiftShader 参数；渲染器要设 `preserveDrawingBuffer: true`，像素比 1。
-- **一个 WebGL 画布一个场景**，整片控制在 2–4 个上下文以内；背景层能用 CSS 或 2D canvas 就不用 WebGL。
-- **GSAP**：主时间轴是 paused 状态，由 `seek` 驱动。`fromTo` 在搭建时就会写入起始值，要在布局测量完成后再搭。React 会重新渲染的节点不要当作 GSAP 目标，动画挂在稳定的包裹层上。
-- **CSS 滤镜**（blur）和 3D 变换在逐帧截图里都能正常工作，但大面积 blur 会拖慢导出；先渲染几帧估算耗时。
+- **Three.js in headless export**: The starter project's `render.mjs` / `stills.mjs` already include SwiftShader parameters; set `preserveDrawingBuffer: true` on the renderer, pixel ratio 1.
+- **One WebGL canvas per scene**, keep the whole film to 2–4 contexts; use CSS or 2D canvas for background layers instead of WebGL when possible.
+- **GSAP**: The main timeline is paused, driven by `seek`. `fromTo` writes start values at build time — build only after layout measurement is complete. Don't target nodes React will re-render; attach animations to a stable wrapper.
+- **CSS filters** (blur) and 3D transforms both work correctly in frame-by-frame capture, but large-area blur slows export; render a few frames first to estimate cost.

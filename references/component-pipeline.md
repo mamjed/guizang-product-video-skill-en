@@ -1,86 +1,86 @@
-# 真实组件到可渲染画面
+# Real Components to Renderable Frames
 
-## 先找原功能入口，不能只找几个基础控件
+## Find the Actual Feature Entry Point First — Not Just a Few Basic Controls
 
-从实际页面/路由找到该功能使用的业务组件及组合关系，再追到主题、CSS、字体、图标、provider 与状态依赖。例如展示模型切换，应复用实际的模型选择器与选项；展示文件树，应复用文件树/节点组件，而不是导入一个 Button 后手写其余页面。
+Find the business components and their composition relationships from actual pages/routes for the feature being shown, then trace to the theme, CSS, fonts, icons, providers, and state dependencies. For example, to showcase model switching, reuse the actual model selector and its options; to showcase a file tree, reuse the file tree/node components — don't import a Button and hand-write the rest of the page.
 
-接入顺序：
+Integration order:
 
-1. 直接导入原业务组件或实际组合组件，并加载它用到的完整样式链。已存在的 Storybook/story、demo route、preview harness 可以作为受控挂载入口。
-2. 补最小 provider/context、固定且无敏感信息的 props 和状态 fixture。adapter 负责让**原组件**运行，不负责重画内部 DOM。
-3. 依赖复杂时先解决 alias、资源路径、CSS 编译、provider、网络/IPC stub 等具体问题。起步工程在浏览器里挂载组件，组件的 effect 会真实执行：缺 provider 就补 provider，要请求数据就在 `fixtures/api.js` 给 fixture，不因一次报错就手写复刻。
-4. 仍然无法直接运行时，优先复用已有纯展示子组件，保留原组合结构和原样式。必要的源码提取要保留来源并最小化改动，不能顺便重新设计。
-5. 只有明确的平台/技术边界使上述路径不可行，才说明具体阻碍、已尝试的方法及受影响的镜头，提出受控录屏或忠实展示适配。已有用户授权覆盖替代方式就继续，否则让用户选择；不能把“省时间、依赖多、不好做动画”当成静默复刻的理由。其余可复用镜头继续推进。
+1. Import the original business component or actual composition component directly, and load its complete style chain. Existing Storybook stories, demo routes, or preview harnesses can serve as controlled mount points.
+2. Add minimal provider/context, fixed non-sensitive props, and state fixtures. The adapter's job is to make the **original component** run, not to redraw its internal DOM.
+3. When dependencies are complex, solve specific issues first: alias resolution, asset paths, CSS compilation, providers, network/IPC stubs. The starter project mounts components in a browser where component effects actually execute: if a provider is missing, add it; if it fetches data, provide fixtures in `fixtures/api.js`; don't hand-replicate because of one error.
+4. When it still can't run directly, prefer reusing existing presentational sub-components, preserving the original composition structure and styles. Necessary source extraction must preserve provenance and minimize changes — don't take the opportunity to redesign.
+5. Only when a clear platform/technical boundary makes the above infeasible, explain the specific obstacle, methods attempted, and affected shots, and propose controlled screen capture or faithful display adaptation. Continue if existing user authorization covers the alternative; otherwise let the user choose; don't use "saves time, too many dependencies, hard to animate" as a reason to silently replicate. Other reusable shots continue in parallel.
 
-“抽象化”指减少画面里同时出现的信息、突出关键原组件和调整取景，不意味着重画软件。默认样式包装宣传画面，不替换被演示的软件本体。
+"Abstraction" means reducing the information visible simultaneously in the frame, highlighting key original components, and adjusting framing — it does not mean redrawing the software. The fallback style wraps the promotional frame; it does not replace the software being demonstrated.
 
-## 让原组件在视频里跑起来
+## Making Original Components Run in the Film
 
-实测可行的一套做法（CodePilot 的输入框、消息、工具步骤、审批弹窗、模型选择器、插件整页都这样上镜）：
+A tested approach (CodePilot's input field, messages, tool steps, approval modal, model selector, and plugin page all appeared on camera this way):
 
-- **provider**：读产品的 App 外壳，把组件依赖的上下文（i18n、tooltip、面板/分屏状态、图标默认值）用静态值补在 `product-context.jsx`。报错 `must be used within ...` 指明了缺哪个。
-- **数据**：组件在 effect 里 `fetch('/api/...')` 的，由 `fake-api.js` 按路径返回 fixture。fixture 从产品自己的常量或目录派生（例如用产品内置的服务商预设生成模型列表），名字和图标就是真的。
-- **不确定性**：`fake-api.js` 固定了时钟和随机种子，按时间段切换问候语、随机挑一句这类组件，每次渲染都一致。
-- **真实交互**：打字用原生 setter 写入真实 textarea 并派发 `input` 事件，React 的 onChange 照常触发；弹层用真实点击打开和关闭；选中项用真实点击选中。驱动按时间算出应有状态，只在 DOM 不一致时动手，所以前后跳转都成立。
-- **弹层与 3D**：Radix 一类 portal 默认挂到 `document.body`，不会跟着镜头缩放。写一个 adapter，把 portal 的 container 指到镜头内部的节点。弹层打开期间，所在面板不要有 3D 旋转（定位库按平面计算）。
-- **视频尺度**：功能镜头把产品根节点整体放大（正文 ≥ 22px），或者用摄像机包层推近；不要缩小字号硬塞进画面。产品有暗色主题且片子走暗调时，直接用它的暗色主题。
+- **Provider**: Read the product's app shell, fill in the context the component depends on (i18n, tooltip, panel/split state, icon defaults) with static values in `product-context.jsx`. Errors saying `must be used within ...` tell you which one is missing.
+- **Data**: Components that `fetch('/api/...')` in effects get fixtures returned by path from `fake-api.js`. Fixtures derive from the product's own constants or catalogs (e.g., generating the model list from the product's built-in service presets) — names and icons are real.
+- **Non-determinism**: `fake-api.js` fixes the clock and random seed; components that switch greetings by time period or randomly pick a sentence render identically every time.
+- **Real interaction**: Typing uses the native setter to write to the real textarea and dispatches an `input` event — React's onChange fires normally; popups open and close with real clicks; selected items are selected with real clicks. The driver computes expected state from time and only intervenes when the DOM disagrees, so scrubbing forward and backward both work.
+- **Popups & 3D**: Radix-style portals mount to `document.body` by default and don't scale with the shot. Write an adapter that points the portal's container to a node inside the shot. While a popup is open, its panel must not have 3D rotation (positioning libraries calculate in 2D).
+- **Video scale**: Feature shots zoom the product root node globally (body text ≥ 22px), or use a camera wrapper to push in; don't shrink font sizes to cram into the frame. When the product has a dark theme and the film goes dark, use its dark theme directly.
 
-## 原组件的状态和动画
+## Original Component State and Animation
 
-- 展开/收起、选中、切换、加载、完成等，优先通过原组件 props、受控状态或真实交互触发。按时间变化的离散状态（第几步完成、回复显示几个字）用 `useShotState` 算出来，再作为 props 传进原组件。
-- 原动画不可 seek 时，仅在展示入口把时间接到主时间线，保留原视觉、状态语义和布局；不要因此删掉原组件换成假 DOM。
-- 镜头外层可以添加缩放、移动、遮罩、聚焦和编排。额外宣传字卡不冒充产品界面；中英标题排版规则也不强制覆盖组件内部字体。
-- 编排型镜头可拆出实际子组件放大，但不得虚构原软件没有的状态、交互或组合关系。
+- Expand/collapse, select, switch, load, complete — prefer triggering through original component props, controlled state, or real interaction. Discrete states that change over time (which step is complete, how many characters of a reply are shown) are computed by `useShotState` and passed as props to the original component.
+- When original animations aren't seekable, connect time to the main timeline only at the display entry point, preserving original visuals, state semantics, and layout; don't delete the original component and replace it with fake DOM.
+- The shot's outer wrapper can add zoom, movement, masking, focus, and choreography. Extra promotional title cards don't impersonate the product interface; bilingual title typography rules don't override fonts inside the component either.
+- Choreographed shots can extract and zoom actual sub-components, but must not fabricate states, interactions, or composition relationships that don't exist in the original software.
 
-## 每个功能镜头的复用证据
+## Reuse Evidence for Every Feature Shot
 
-在 `evidence/component-usage.json` 或等价清单中逐镜头记录：`shotId`、`featureEntry`、`components`、`styleEntries`、`stateDriver`、`adapters`、`reuseMode`、`exceptions`。路径要指到真正使用的源码，而非只列一串希望使用的组件名。
+Record per shot in `evidence/component-usage.json` or equivalent: `shotId`, `featureEntry`, `components`, `styleEntries`, `stateDriver`, `adapters`, `reuseMode`, `exceptions`. Paths must point to source actually used, not just list component names you hope to use.
 
-将清单与构建导入图、实际 JSX/挂载入口和静帧核对：
+Cross-check the list against the build import graph, actual JSX/mount entry points, and still frames:
 
-- 是否用了对应功能的业务组件，而非只有通用按钮/卡片？
-- 样式是否来自组件实际使用的 CSS/theme/font/assets，而非几项颜色常量？
-- 选中、展开等状态是否确实由原组件呈现？
-- 原页面与镜头中的组件在形状、层级、间距、图标、状态细节上是否一致（允许取景和等比例放大）？
+- Did it use the business component for the corresponding feature, not just generic buttons/cards?
+- Do styles come from the CSS/theme/font/assets the component actually uses, not just a few color constants?
+- Are select, expand, etc. states actually rendered by the original component?
+- Does the component in the shot match the original page in shape, hierarchy, spacing, icons, and state detail (framing and proportional zoom allowed)?
 
-构建图有导入不等于真的上镜；静帧相似也不证明复用了源码，两份证据要结合看。未用原组件的部分明确标注，不将整片笼统称为“全部原生组件”。
+An import in the build graph doesn't prove it appeared on camera; similar still frames don't prove source reuse — both pieces of evidence must be combined. Parts not using original components are marked explicitly; don't call the whole film "all native components" in vague terms.
 
-React/Next 项目按项目实际情况处理 `@/` alias、CSS/Tailwind、Next Image、router、客户端 providers 和图标库。打包成功不等于样式已生效，也不等于数据到位：出静帧看。
+React/Next projects handle `@/` aliases, CSS/Tailwind, Next Image, router, client providers, and icon libraries per project specifics. A successful build doesn't mean styles took effect, nor that data arrived: produce still frames and check.
 
-Vue/Svelte 使用自身渲染入口；Electron 壳不要在宣传片进程内启动真实 IPC；原生 UI 无法直接导入时，说明选择受控录屏或展示层适配的原因。
+Vue/Svelte use their own render entry; Electron shells should not start real IPC inside the promo process; when native UI can't be imported directly, explain why controlled screen capture or display-layer adaptation was chosen.
 
-原生应用（例如 Rust/GPUI、SwiftUI）经用户同意做忠实重建时：尺寸取自源码（标题栏、标签栏、面板默认宽度、字号行高），颜色取自主题文件，字体、图标、标志用仓库里的原文件；把界面上会变的东西（缓冲区文字、光标、弹层、面板状态）写成影片时间的纯函数模型，画面和 `plan.json` 的动作时间都从这个模型读。在 component-usage 里写明每个界面对应的源码文件，并说明这是重建而不是运行中的应用。用户明确要求代码动效时，不要偷偷退化为录屏拼贴。
+When native apps (e.g., Rust/GPUI, SwiftUI) are faithfully rebuilt with user consent: dimensions come from source code (title bar, tab bar, panel default widths, font sizes and line heights), colors from theme files, fonts/icons/logos from original repo files; write everything that changes on screen (buffer text, cursor, popups, panel state) as a pure function model of film time, and read both the visuals and `plan.json` action timing from this model. In component-usage, state which source files correspond to each interface and note this is a rebuild, not a running app. When the user explicitly requests code-driven animation, don't secretly degrade to screen-capture collage.
 
-## 工程与资源
+## Engineering & Assets
 
-建议将 source、assets、evidence、renders 放在独立项目。记录依赖版本及 lockfile、尺寸、FPS、时长、组件来源、字体和音乐来源。不要把完整原仓库/node_modules 打包给别人。
+Keep source, assets, evidence, and renders in a separate project. Record dependency versions and lockfile, dimensions, FPS, duration, component sources, font and music sources. Don't bundle the full original repo/node_modules for others.
 
-资源处理必须覆盖真实组件内部引用：
+Asset handling must cover references inside real components:
 
-- `/provider-icons/...` 这样的根路径在独立播放器里常失效。复制公开资源并修正 base path，或将小 SVG 转为 data URI。
-- CSS 中的 `url(...)`、字体文件、图标内链、图片加载策略也要处理。
-- 等待字体和图片解码后再截图。页面无报错不意味着图片完整；检查 `img.complete && img.naturalWidth > 0`。
-- 本地 HTTP 服务比 `file://` 更接近导出环境。最终文件尽量不依赖外网。
-- 需要共享的资源应有相应许可；参考视频中的音乐不能默认提取后复用。
+- Root-relative paths like `/provider-icons/...` often break in standalone players. Copy public assets and fix the base path, or convert small SVGs to data URIs.
+- CSS `url(...)`, font files, icon inlines, and image loading strategies also need handling.
+- Wait for fonts and images to decode before capturing. A page with no errors doesn't mean images are complete; check `img.complete && img.naturalWidth > 0`.
+- A local HTTP server is closer to the export environment than `file://`. Final files should avoid depending on the external network.
+- Shared resources need appropriate licensing; music from reference videos cannot be assumed extractable and reusable.
 
-## 确定性与时间线
+## Determinism & Timeline
 
-所有动画由同一主时间轴或纯 `seek(t)` 驱动。任意 `t` 都能恢复完整画面，不依赖曾经播放过之前的帧。
+All animation is driven by one main timeline or a pure `seek(t)`. Any `t` can reconstruct the complete frame — no dependency on having played previous frames.
 
-- GSAP：暂停的主 timeline；在 HyperFrames 中按其当前项目契约注册 `window.__timelines[compositionId]`，媒体由框架负责。
-- Remotion：状态由 frame/fps 计算。
-- 独立浏览器（起步工程）：`window.seek(seconds)` 依次推进 React 时钟、交互驱动、GSAP 主时间轴和每帧绘制；由 Playwright 逐帧截图 + FFmpeg 导出。
+- GSAP: paused main timeline; in HyperFrames, register `window.__timelines[compositionId]` per the current project contract; media is framework-managed.
+- Remotion: state computed from frame/fps.
+- Standalone browser (starter project): `window.seek(seconds)` advances React clock, interaction drivers, GSAP main timeline, and per-frame rendering in sequence; Playwright captures frame by frame + FFmpeg exports.
 
-每个镜头定义初始/结束状态，并测试前后跳转。起步工程冻结了所有 CSS transition/animation，motion 库的微动画可以用全局开关跳到终态；需要保留的产品动态（加载旋转、进度条）在 `onRender` 里按时间重建。随机数、请求和定时器使用固定 fixture。
+Define initial/end states for each shot and test forward/backward jumps. The starter project freezes all CSS transitions/animations; motion library micro-animations can jump to end state via a global switch; product dynamics that must be preserved (loading spinners, progress bars) are rebuilt by time in `onRender`. Random numbers, requests, and timers use fixed fixtures.
 
-## 构图与裁切
+## Composition & Cropping
 
-CardFrame 负责阴影、圆角和外部空间，不裁切；CardSurface 负责内部背景和裁切。放大组件时检查**变换后的**边界。不要以为父容器有足够高度就不会裁掉 zoom 后的子元素。
+CardFrame handles shadow, border radius, and outer space — no cropping; CardSurface handles inner background and cropping. When zooming a component, check the **post-transform** bounds. Don't assume the parent has enough height means it won't clip a zoomed child.
 
-对要居中的卡片，可用外层 flex/grid 居中、内层 transform 缩放，并为变换预留空间。避免定位偏移再乘上 CSS zoom 造成意外下沉。页面总宽不溢出不能证明局部 mask 内的文字/图标没被裁。
+For cards to be centered: outer flex/grid centers, inner transform scales, and reserve space for the transform. Avoid positioning offsets multiplied by CSS zoom causing unexpected downward shift. A page whose total width doesn't overflow doesn't prove text/icons inside a local mask aren't cropped.
 
-用产品的完整正式图标，尤其是有圆角矩形底板的 app icon。不要只截取里面的核心符号代替。
+Use the product's full official icons, especially app icons with rounded-rectangle backplates. Don't just crop out the inner symbol as a substitute.
 
-## 链接处理
+## Link Handling
 
-依据用户的发布要求处理，不推定某地区所有平台都禁止链接。要求不出现链接时，优先清空 fixture 中 URL，地址栏用中性形状或模糊占位；若必须用画面遮盖，遮罩应与组件共同移动和缩放。片尾、角标、截图、导出帧一并检查。不要只把 DOM 某处模糊而在另一个镜头露出完整 URL。
+Handle per user's release requirements — don't assume all platforms in a region forbid links. When links must not appear, prefer clearing URLs in fixtures first, using neutral shapes or blurred placeholders in the address bar; if screen masking is necessary, the mask must move and scale with the component. Check end cards, corner badges, screenshots, and exported frames too. Don't blur a URL in one spot only to reveal the full URL in another shot.

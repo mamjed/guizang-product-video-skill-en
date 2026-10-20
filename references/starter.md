@@ -1,24 +1,24 @@
-# 起步工程：技术底座，不是成片模板
+# Starter Project: Technical Foundation, Not a Production Template
 
-初始化后得到 10 秒、3 镜头的**技术样片**，只证明"真实组件挂载 → 时间轴 → 任意时刻截图 → MP4"这条链路能走通。它刻意没有视觉风格：正式片的画面规范、镜头和手法都按 `DIRECTION.md` 为这个产品重新写。
+Initialization produces a 10-second, 3-shot **technical demo** that proves only one thing: "real components mount → timeline → screenshot at any moment → MP4" pipeline works end to end. It deliberately has no visual style — the production film's frame design system, shots, and techniques are all written fresh in `DIRECTION.md` for this product.
 
-## 运行
+## Running
 
-需要 Python 3、Node.js、FFmpeg。先按 SKILL.md 做环境检查，缺项按 [依赖安装](onboarding.md) 补装。
+Requires Python 3, Node.js, FFmpeg. First run the environment check per SKILL.md; install missing items per [Dependency Installation](onboarding.md).
 
 ```sh
 python3 <skill-dir>/scripts/init_project.py --output <video-dir> --style repo --repo <repo-dir>
 cd <video-dir>
 python3 <skill-dir>/scripts/check_environment.py --project . --engine browser
 npm run build
-node stills.mjs evidence/stills 1.5 5 8.5          # 一次会话批量出静帧，并打印页面错误和 API 请求
-node render.mjs --from 4 --to 7 --output renders/draft.mp4   # 局部草稿，不需要音频
+node stills.mjs evidence/stills 1.5 5 8.5          # Batch still frames in one session, also prints page errors and API requests
+node render.mjs --from 4 --to 7 --output renders/draft.mp4   # Partial draft, no audio needed
 node render.mjs --silent-demo --output renders/technical-demo.mp4
-npm run preview                                     # 浏览器控制台：await seek(4) 或 playFilm()
-node cover.mjs                                      # 从 cover/cover.html 导出 3:4 / 4:3 / 16:9 封面（见 references/cover.md）
+npm run preview                                     # Browser console: await seek(4) or playFilm()
+node cover.mjs                                      # Export 3:4 / 4:3 / 16:9 covers from cover/cover.html (see references/cover.md)
 ```
 
-正式导出：
+Production export:
 
 ```sh
 python3 <skill-dir>/scripts/mix_audio.py plan.json
@@ -26,81 +26,81 @@ node render.mjs --audio assets/master.wav --output renders/final.mp4
 python3 <skill-dir>/scripts/check_delivery.py plan.json --video renders/final.mp4 --mix-report evidence/audio-mix.json
 ```
 
-导出逐帧截图（JPEG 中间帧，x264 编码）。50 秒片子、含 WebGL 和模糊滤镜，一般 2–4 分钟；先渲染几秒估算。`--silent-demo` 只用于技术样片；用户要求的正式静音片设 `audioRequired:false` 并记录 `audioExceptionReason`。
+Exports frame-by-frame stills (JPEG middle frames, x264 encoding). A 50-second film with WebGL and blur filters typically takes 2–4 minutes; render a few seconds first to estimate. `--silent-demo` is only for the technical demo; for a user-requested silent production film, set `audioRequired:false` and record `audioExceptionReason`.
 
-## 运行时结构
+## Runtime Architecture
 
 ```
-src/client.jsx        挂载 <Film>，等字体和假数据就绪后运行各镜头的 builder，暴露 window.seek / __filmReady
-src/engine.js         seek(t)：React 时钟 → 交互驱动 → GSAP 主时间轴 → 镜头显隐 → onRender 画布
-src/film-store.js     useShotState(select)：组件按镜头内时间取离散状态（第几步、打了几个字）
-src/fake-api.js       固定时钟、固定随机种子、按路径返回 fixture 的 fetch，静默 EventSource/WebSocket
-src/fixtures/api.js   接口 fixture；尽量从产品自己的常量/目录派生，保证名字、图标是真的
-src/product-context.jsx  产品外壳本该提供的 provider（i18n、主题、tooltip、路由/面板上下文）
-src/kit/              Split + reveal（文字拆分入场）、Cursor + paintCursor、offsetCenter / screenCenterAt、setFieldValue / typed / ensureOpen
-src/shots/index.js    plan.json 每个镜头 id → 视图组件 + builder
-src/film.css          本片的画面规范（字号阶梯、布局），加上逐帧渲染必需的机制
-src/adapters/         next/image、next/navigation 等框架运行时的静态替身，按需 alias
+src/client.jsx        Mounts <Film>, waits for fonts and fixture data, then runs each shot's builder, exposes window.seek / __filmReady
+src/engine.js         seek(t): React clock → interaction-driven → GSAP master timeline → shot visibility → onRender canvas
+src/film-store.js     useShotState(select): components read discrete state by in-shot time (which step, how many characters typed)
+src/fake-api.js       Fixed clock, fixed random seed, path-based fixture fetch, silent EventSource/WebSocket
+src/fixtures/api.js   API fixtures; derive from the product's own constants/directories where possible so names and icons are real
+src/product-context.jsx  Providers the product shell would normally supply (i18n, theme, tooltip, routing/panel context)
+src/kit/              Split + reveal (text split entrance), Cursor + paintCursor, offsetCenter / screenCenterAt, setFieldValue / typed / ensureOpen
+src/shots/index.js    plan.json shot id → view component + builder
+src/film.css          This film's frame design system (type scale, layout), plus mechanisms required for frame-by-frame rendering
+src/adapters/         Static stand-ins for framework runtimes like next/image, next/navigation, etc., aliased as needed
 ```
 
-`seek(t)` 是 t 的纯函数，前后跳转、单帧渲染结果一致：
+`seek(t)` is a pure function of t — seeking forward, backward, or rendering a single frame all produce consistent results:
 
-1. `flushSync` 把时间推给 React。组件用 `useShotState(l => stageAt(l, [...]))` 只在离散状态变化时重渲染，例如工具步骤出现、回复多了几个字。
-2. 运行 `onDrive(id, fn)` 注册的驱动，也就是**真实交互**：往真实输入框里打字（`setFieldValue` + `typed`）、点真实按钮打开真实弹层（`ensureOpen`）。驱动要幂等：先按时间算出应有状态，DOM 不同时才动手。需要等弹层定位时返回 Promise，`render.mjs` 会等它。
-3. `master.seek(t)`：所有 GSAP 动画都挂在这一条暂停的主时间轴上，用影片绝对时间摆放。
-4. 按时间显示/隐藏镜头（前后各留 0.8 秒给转场重叠）。
-5. 调用 `onRender(id, fn)` 注册的每帧绘制：Three.js、2D canvas、依赖时间的样式计算。
+1. `flushSync` pushes time to React. Components use `useShotState(l => stageAt(l, [...]))` and re-render only when discrete state changes, e.g. a tool step appears or a reply gains characters.
+2. Runs drivers registered via `onDrive(id, fn)` — the **real interactions**: typing into real input fields (`setFieldValue` + `typed`), clicking real buttons to open real overlays (`ensureOpen`). Drivers must be idempotent: compute expected state from time first, only touch the DOM when it differs. Return a Promise when overlay positioning needs to settle; `render.mjs` will await it.
+3. `master.seek(t)`: all GSAP animations hang on this single paused master timeline, placed using absolute film time.
+4. Show/hide shots by time (with 0.8s overlap on each side for transition blending).
+5. Calls per-frame drawing registered via `onRender(id, fn)`: Three.js, 2D canvas, time-dependent style calculations.
 
-### 写一个镜头
+### Writing a Shot
 
 ```jsx
-// src/shots/agent.jsx（示意，名字、结构按本片需要来）
-export function AgentView() { /* 真实组件 + 本片的排版；GSAP 目标用稳定的包裹层 */ }
+// src/shots/agent.jsx (illustrative; names and structure follow this film's needs)
+export function AgentView() { /* Real component + this film's layout; GSAP targets use stable wrappers */ }
 export const buildAgent = tl => {
   const s = shot('agent');
-  // 1. 先测量（布局已存在）：offsetCenter(el, root)，或 screenCenterAt(tl, t, el) 取 3D 变换后的屏幕位置
-  // 2. 再往 tl 上摆动画：tl.fromTo(el, from, to, s.start + 0.4)
-  // 3. 注册每帧工作：onDrive('agent', local => ...)、onRender('agent', local => ...)
+  // 1. Measure first (layout already exists): offsetCenter(el, root), or screenCenterAt(tl, t, el) for 3D-transformed screen position
+  // 2. Then place animations on tl: tl.fromTo(el, from, to, s.start + 0.4)
+  // 3. Register per-frame work: onDrive('agent', local => ...), onRender('agent', local => ...)
 };
 ```
 
-- 镜头的起止时间只写在 `plan.json`，代码通过 `shot(id)` 读，时间只有一处来源。
-- GSAP 的 `fromTo` 在搭建时就写入起始值，所以测量要放在摆动画之前。
-- GSAP 时间轴是 thenable：`await tl` 要等时间轴播完，暂停的主时间轴永远不会结束。builder 可以是 async 函数，但不要 await 时间轴本身。
-- React 会重新渲染或条件渲染的节点，不要直接当 GSAP 目标：套一层稳定的包裹层来动。
-- 产品里的微动画（motion/framer-motion、CSS transition）会和影片时钟抢状态：`film.css` 已冻结 CSS 动画；用 motion 库的产品在 `client.jsx` 里打开 `MotionGlobalConfig.skipAnimations`。旋转的加载图标这类需要动的，在 `onRender` 里按时间设 transform。
-- 背景效果可以参考 `assets/fx-lab/` 改写，见 [视觉手法词汇](visual-vocabulary.md)。
+- Shot start/end times live only in `plan.json`; code reads them via `shot(id)` — single source of truth for timing.
+- GSAP `fromTo` writes start values at build time, so measurement must happen before placing animations.
+- GSAP timelines are thenable: `await tl` waits for the timeline to finish, but a paused master timeline never ends. Builders can be async functions, but do not await the timeline itself.
+- Nodes that React re-renders or conditionally renders should not be direct GSAP targets: wrap them in a stable container to animate.
+- Micro-animations in the product (motion/framer-motion, CSS transitions) compete with the film clock for state: `film.css` freezes CSS animations; products using motion libraries should enable `MotionGlobalConfig.skipAnimations` in `client.jsx`. For things that need to keep moving (spinning loading icons), set transforms by time in `onRender`.
+- Background effects can reference and adapt `assets/fx-lab/`, see [Visual Device Vocabulary](visual-vocabulary.md).
 
-### 首帧海报
+### First-Frame Poster
 
-开场大多从空画面入场，但平台会拿第一帧当缩略图。解决方法：在最上层盖一张开场完成态的静帧，前 0.3 秒（约 9 帧）完全不透明，再用 0.3 秒淡出。底下的开场动画照常从 0 秒开始，时间轴和音效都不用改。
+Openings typically start from a blank canvas, but platforms grab the first frame as a thumbnail. The fix: overlay a still frame of the completed opening state on the topmost layer, fully opaque for the first 0.3 seconds (≈ 9 frames), then fade out over 0.3 seconds. The underlying opening animation still starts from 0s — no timeline or audio changes needed.
 
-起步工程里同一份 DOM 由 GSAP 主时间轴驱动，没法同时停在 0 秒和完成时刻，所以海报用真实渲染出来的静帧：
+In the starter project, the same DOM is driven by the GSAP master timeline and cannot simultaneously sit at t=0 and at the completion moment, so the poster uses a real rendered still frame:
 
-1. 开场搭好后，挑开场段落完成、标题都在的时刻出静帧，放进 `public/`（`build.mjs` 会复制到 `dist`）：
+1. After the opening is built, pick the moment when the opening section is complete and all titles are visible, export a still frame, and place it in `public/` (`build.mjs` copies it to `dist`):
    ```sh
    node stills.mjs public/poster 5.9 && mv public/poster/t005.90.png public/poster.png && rmdir public/poster
    ```
-2. 在 `film.jsx` 的 `<main>` 末尾加 `<img id="poster" src="poster.png" alt="" />`，样式铺满画面、`z-index` 高于所有镜头，然后 `npm run build`。
-3. 在开场镜头的 builder 里把淡出挂到主时间轴上。不要用 `onRender`：它只在镜头附近调用，直接跳到片子后段时海报会一直盖着。
+2. Add `<img id="poster" src="poster.png" alt="" />` at the end of `<main>` in `film.jsx`, styled to fill the frame with `z-index` above all shots, then `npm run build`.
+3. In the opening shot's builder, attach the fadeout to the master timeline. Do not use `onRender`: it only runs near the shot — jumping directly to a later section would leave the poster covering everything.
    ```js
    tl.fromTo('#poster', {opacity: 1}, {opacity: 0, duration: 0.3, ease: 'none'}, 0.3);
    ```
 
-开场改了，就重新出一次静帧，否则海报和片子会对不上。视图本身是时间纯函数（直接按 `t` 渲染）的片子，也可以不用静帧，在 0.6 秒内再挂一份 `<Opening t={完成时刻} />` 当海报层，原理相同。
+When the opening changes, re-export the still frame or the poster and film will not match. For films where the view itself is a pure function of time (renders directly from `t`), you can skip the still frame and instead mount a second `<Opening t={completionTime} />` as a poster layer within 0.6 seconds — same principle.
 
-## 接入仓库
+## Connecting to the Repo
 
-1. 在镜头视图里直接 import 该功能的原业务组件和组合层。不要只接几个基础按钮，再手写剩下的界面。
-2. 读产品的根布局和 App 外壳，把组件依赖的 provider 写进 `product-context.jsx`，全部用静态值。缺哪个 provider，运行时会直接报错（`xxx must be used within yyy`），按报错逐个补。
-3. 组件在 effect 里请求数据的，在 `fixtures/api.js` 按路径给 fixture。`stills.mjs` 输出的 `api` 列表就是实际请求过的路径，用来查漏。
-4. 编译产品真实样式到 `src/product.css`（下文），保留主题、字体、图标和状态规则。产品有暗色主题时，`ProductContext dark` 直接启用。
-5. 品牌、字体、公开图标放 `public/`（会复制到网页根），修正组件里的根路径引用（如 `/provider-icons/...`）。
-6. 构建会写出 `evidence/component-imports.json`；逐镜头记录复用证据，见 [组件接入](component-pipeline.md)。
+1. In shot views, directly import the feature's original business components and composition layers. Do not wire up just a few basic buttons and hand-write the rest of the UI.
+2. Read the product's root layout and app shell; write the providers the components depend on into `product-context.jsx`, all using static values. Missing providers cause immediate runtime errors (`xxx must be used within yyy`) — add them one by one per error.
+3. For components that fetch data in effects, provide fixtures in `fixtures/api.js` by path. The `api` list output by `stills.mjs` shows the actual requested paths — use it to find gaps.
+4. Compile the product's real styles into `src/product.css` (below), preserving theme, fonts, icons, and state rules. When the product has a dark theme, `ProductContext dark` enables it directly.
+5. Place brand assets, fonts, and public icons in `public/` (copied to the web root); fix root-path references in components (e.g. `/provider-icons/...`).
+6. The build outputs `evidence/component-imports.json`; record reuse evidence per shot, see [Component Pipeline](component-pipeline.md).
 
-`--style default` / `hybrid` 会复制默认样式组件；`repo` 不复制。起步样片按 1920×1080 布局，改画幅必须重新排版。
+`--style default` / `hybrid` copies fallback style components; `repo` does not. The starter demo is laid out at 1920×1080; changing the aspect ratio requires re-layout.
 
-### 解析配置
+### Parse Configuration
 
 ```js
 // integration.config.mjs
@@ -110,24 +110,22 @@ export default {
   repoDir: repo,
   aliases: {
     '@': path.join(repo, 'src'),
-    'next/image': path.join(video, 'src/adapters/next-image.jsx'),     // 组件真的用到才加
+    'next/image': path.join(video, 'src/adapters/next-image.jsx'),     // Only add when components actually use it
   },
   external: [], loaders: {}, define: {},
-  esbuild: {},   // 其他 esbuild 选项，例如 tsconfigRaw
+  esbuild: {},   // Other esbuild options, e.g. tsconfigRaw
 };
 ```
 
-构建器打出浏览器 IIFE 包：先从产品的 `node_modules` 解析依赖，React/ReactDOM 统一指向视频工程的那一份（两份 React 会导致 `Cannot read properties of null (reading 'useContext')`）。产品依赖缺失时，只在视频工程安装固定版本的展示依赖。pnpm 等严格隔离的布局按实际 workspace 映射解析路径。含 top-level await 的依赖不能打进 IIFE：换用它的同步入口，或把构建改成 ESM。
+The builder outputs a browser IIFE bundle: resolves dependencies from the product's `node_modules` first; React/ReactDOM both point to the video project's copy (two React instances cause `Cannot read properties of null (reading 'useContext')`). When product dependencies are missing, install only pinned display dependencies in the video project. Resolve paths for strictly isolated layouts like pnpm according to the actual workspace mapping. Dependencies with top-level await cannot be bundled into the IIFE: switch to their synchronous entry point, or change the build to ESM.
 
-monorepo 里直接导出 TS 源码的 workspace 包：把包名 alias 到它的 `src`；带子路径 `exports` 的包，读它的 `package.json` 生成一张子路径 → 源文件的 alias 表。产品开了 `verbatimModuleSyntax` 时，类型导入会被原样保留，可能把服务端运行时拖进浏览器包；用 `esbuild: {tsconfigRaw: {compilerOptions: {verbatimModuleSyntax: false}}}` 只放宽这次展示构建。
+Monorepo workspace packages that export TS source directly: alias the package name to its `src`; for packages with subpath `exports`, read their `package.json` to generate a subpath → source file alias table. When the product has `verbatimModuleSyntax` enabled, type imports are preserved as-is and may drag server-side runtime into the browser bundle; use `esbuild: {tsconfigRaw: {compilerOptions: {verbatimModuleSyntax: false}}}` to relax only this display build.
 
-暗色 token 挂在 `:root` 的 `dark` 变体上时，`dark` class 必须加在 `<html>` 上（`client.jsx` 挂载前执行 `document.documentElement.classList.add('dark')`），加在某个 div 上不生效。同一画面要同时出现几套主题时，先确认 Tailwind 工具类直接引用 `var(--token)`，再把主题色写成元素级 CSS 变量。
+When an alias needs to "replace one export in a module, keep everything else" (e.g. redirecting an overlay portal into the shot), the adapter can first `export * from '<real file absolute path>'`, then separately export the same-named replacement.
 
-某个 alias 需要"换掉一个模块里的一个导出、其余照旧"时（例如让弹层的 portal 挂进镜头里），adapter 可以先 `export * from '<真实文件绝对路径>'`，再单独导出同名的替身。
+### Next / Tailwind Style Chain
 
-### Next / Tailwind 样式链
-
-Tailwind 源 CSS 要先编译。Tailwind v4：创建 `src/product.input.css`，导入产品真实的 CSS 入口，并扫描产品源码和视频源码：
+Tailwind source CSS must be compiled first. Tailwind v4: create `src/product.input.css`, import the product's real CSS entry, and scan both product and video source:
 
 ```css
 @import "/absolute/path/to/product/src/app/globals.css";
@@ -136,33 +134,33 @@ Tailwind 源 CSS 要先编译。Tailwind v4：创建 `src/product.input.css`，�
 ```
 
 ```sh
-npx @tailwindcss/cli -i src/product.input.css -o src/product.css   # 版本与产品一致
+npx @tailwindcss/cli -i src/product.input.css -o src/product.css   # Version matches the product
 npm run build
 ```
 
-镜头代码里新写了 Tailwind 类，要重新编译。Tailwind v3 用对应版本的 CLI 和继承产品 theme/plugins 的配置，`content` 同时包含产品与视频源码。产品 CSS 里的 `url(...)` 字体/图片要能在 `dist/` 里找到。来源：[esbuild nodePaths](https://esbuild.github.io/api/#node-paths)、[Tailwind CLI](https://tailwindcss.com/docs/installation/tailwind-cli)。
+When shot code adds new Tailwind classes, recompile. Tailwind v3 uses the matching version's CLI and a config inheriting the product's theme/plugins; `content` includes both product and video source. `url(...)` fonts/images in the product CSS must be findable in `dist/`. Sources: [esbuild nodePaths](https://esbuild.github.io/api/#node-paths), [Tailwind CLI](https://tailwindcss.com/docs/installation/tailwind-cli).
 
-## plan 字段
+## Plan Fields
 
-- `demo`：技术样片 true，正式内容完成后设为 false。
-- `product / width / height / fps / duration / style / audioRequired`：工程规格。
-- `typography`：默认 `mode:bilingual`，分别指定 `zhFont / enFont`，`zhStyle:sans-serif`；用户指定单语或其他字体时，用 `exceptionReason` 记录依据。
-- `shots[]`：`id, start, end, type, headlineEn, headline, plainExplanation, description, descriptionAt, claim, source, component, actions`。镜头在代码里的实现以 `DIRECTION.md` 的镜头表为准，plan 记录时间、事实与声音，两者要一致。
-- `claim` 为 true 的镜头必须给 `source`。写法：`file:docs/release.md`（相对视频工程）或 `repo:src/features/panel.tsx`（相对 `plan.repo`），支持 `:行号` / `#L行号`；裸路径先查视频工程再查 `plan.repo`；URL、版本标签、提交引用留给事实核对。品牌开场不需要假造 source。
-- `component`：实际源码路径或适配器；字卡可为 null。
-- `actions`：唯一 `id`、相对镜头开始的 `at`、动作描述、`soundRequired`。
-- `audio.music / audio.cues`：cue 的 `at` 是文件开始的影片绝对时间，`syncOffset` 是文件内听觉落点，满足 `at + syncOffset = 动作时间`。落点用 `scripts/sfx_landmarks.py` 测，不要猜。可选 `onBeat` / `beatDivision` 对照 `audio.beatGrid`。
-- `descriptionAt`：说明文字相对镜头开始的出现时间，用于阅读时间提示。
+- `demo`: true for the technical demo; set to false once production content is ready.
+- `product / width / height / fps / duration / style / audioRequired`: project specs.
+- `typography`: default `mode:bilingual`, specify `zhFont / enFont` separately, `zhStyle:sans-serif`; when the user specifies monolingual or other fonts, record the rationale in `exceptionReason`.
+- `shots[]`: `id, start, end, type, headlineEn, headline, plainExplanation, description, descriptionAt, claim, source, component, actions`. Shot implementation in code follows the shot table in `DIRECTION.md`; the plan records timing, facts, and audio — the two must be consistent.
+- Shots with `claim` true must provide `source`. Format: `file:docs/release.md` (relative to video project) or `repo:src/features/panel.tsx` (relative to `plan.repo`), supporting `:line-number` / `#Lline-number`; bare paths check the video project first then `plan.repo`; URLs, version tags, commit references are for fact-checking. Brand openings do not need fabricated sources.
+- `component`: actual source path or adapter; can be null for title cards.
+- `actions`: unique `id`, `at` relative to shot start, action description, `soundRequired`.
+- `audio.music / audio.cues`: cue `at` is the film-absolute time of file start; `syncOffset` is the auditory landing point within the file, satisfying `at + syncOffset = action time`. Measure landing points with `scripts/sfx_landmarks.py` — do not guess. Optional `onBeat` / `beatDivision` references `audio.beatGrid`.
+- `descriptionAt`: time relative to shot start when the description text appears, used for reading-time hints.
 
-改了分镜或配乐就重新混音；正式导出会核对 plan 与 master 的哈希。通用占位组件带 `data-skill-placeholder`，正式模式下 build 会拒绝仍在画面上的占位内容。
+Re-mix when the shot list or score changes; production export verifies the hash of plan vs. master. Generic placeholder components carry `data-skill-placeholder`; in production mode the build rejects placeholder content still visible on screen.
 
-## 接入回归
+## Integration Regression
 
-修改构建器、引擎或 kit 后运行：
+After modifying the builder, engine, or kit, run:
 
 ```sh
 python3 -m unittest discover -s <skill-dir>/tests
 node <skill-dir>/tests/integration.mjs --modules <video-dir>/node_modules
 ```
 
-集成测试在临时目录构造一个产品仓库，验证：只存在于产品里的依赖和 alias 能解析、CSS 资源能复制、组件 effect 通过 fixture API 拿到数据、前后跳转时 GSAP 状态正确、WebGL 能在无头导出里渲染。它不会自动安装依赖。
+The integration test constructs a product repo in a temp directory and verifies: dependencies and aliases that exist only in the product resolve, CSS assets copy, component effects receive data through fixture APIs, GSAP state is correct when seeking forward and backward, and WebGL renders in headless export. It does not auto-install dependencies.

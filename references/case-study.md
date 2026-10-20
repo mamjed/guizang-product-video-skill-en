@@ -1,63 +1,63 @@
-# CodePilot 原案例：保留做法，不固化偶然参数
+# CodePilot Original Case Study: Preserve What Worked, Do Not Freeze Accidental Parameters
 
-最终成片为 48 秒、1920×1080、30 FPS，14 镜头，120 BPM。真实 React 组件经 esbuild 打包形成画面，GSAP 驱动，HyperFrames 导出。音乐是代码原创器乐，另配来自本地素材库、来源标注为 Pixabay 的录制音效；早期第一版则连提示音也由代码合成。skill 的默认流程采用后期组合，来源和内置替代音效见 [声音来源](audio-sourcing.md)。以上是一个成功实例，不是所有产品的必选技术栈或时长。
+The final production film is 48 seconds, 1920×1080, 30 FPS, 14 shots, 120 BPM. Real React components bundled via esbuild form the visuals, driven by GSAP, exported by HyperFrames. The music is code-original instrumental; additional recorded SFX sourced from a local library attributed to Pixabay; the earliest first version had even notification tones synthesized by code. The skill's default workflow uses post-production compositing; source and bundled replacement SFX are listed in [Audio Sourcing](audio-sourcing.md). This is one successful instance, not a mandatory tech stack or duration for all products.
 
-## 有效的做法
+## What Worked
 
-- 直接导入模型选择器、RuntimeSelector、输入框、标签页、卡片容器、CLI 维护行、按钮和图标；provider 用最小只读适配。
-- 镜头从大字切到选择卡片，再到输入区、工作区和通知，不反复使用同一版式。
-- 文件树、diff、浏览器内容和系统通知是受控展示数据；不谎称整套业务系统都在真实运行。
-- 音乐、音效 cue 和视觉共用时间轴。约 0.3–0.6 秒的操作动作，加上足够的解释停留。
+- Directly imported the model selector, RuntimeSelector, input fields, tabs, card containers, CLI maintenance rows, buttons, and icons; providers used minimal read-only adapters.
+- Shots progressed from large text to selection cards, then to input areas, workspaces, and notifications — never repeating the same layout.
+- File trees, diffs, browser content, and system notifications were controlled demonstration data; did not claim the entire business system was running live.
+- Music, SFX cues, and visuals shared one timeline. Actions of ≈ 0.3–0.6 seconds, plus enough explanation dwell time.
 
-## 迭代中真正修过的问题
+## Issues Actually Fixed During Iteration
 
-| 问题 | 根因 | 可复用的检查 |
+| Problem | Root cause | Reusable check |
 | --- | --- | --- |
-| 画面好但像无声 | 早期音乐过轻，存在音轨仍听感不足 | 测响度并试听成片 |
-| 节奏像卡住 | 重复布局，动画和静止停留偏长 | 提前解释、穿插字卡和特写、让每次停顿有信息 |
-| 方向稿偏离用户意思 | 生成概念图不能代替真实组件动画 | 早期就接入代码组件，静帧来自实际渲染 |
-| GLM 5.3 卡片下沿被裁 | 定位偏移叠加 zoom 放大，超出局部 mask | 检查变换后的组件边界，居中并预留空间 |
-| TokenDance 图标裂图 | 组件引用网站根路径，独立预览资源缺失 | 将原 SVG 内联或正确复制，预览与导出分别验图 |
-| 字少但说不清楚 | 小字只有短语，没有功能与结果 | 完整句子，提早出现，按阅读时间安排镜头 |
-| Logo 不完整 | 只用了图标中心符号 | 用正式圆角矩形 app icon |
-| 抽帧缺组件 | CSS transition/visibility 与主时间线争夺状态 | 将原动画接到主时钟，必要时只禁用具体冲突元素，前后 seek 验看 |
-| 不符合这次发布要求 | 浏览器和片尾有 URL | fixture 去 URL，地址栏中性化，移除片尾链接及对应动画 |
+| Visuals good but feels silent | Early music too quiet; tracks exist but still feel insufficient | Measure loudness and listen to the final film |
+| Rhythm feels stuck | Repeated layouts; animation and still holds too long | Explain early, intersperse title cards and close-ups; make every pause carry information |
+| Direction draft diverged from user intent | Generating concept art cannot replace real component animation | Wire in code components early; still frames come from actual renders |
+| GLM 5.3 card bottom edge cropped | Position offset compounded by zoom magnification, exceeding local mask | Check transformed component bounds; center and leave room |
+| TokenDance icon tearing | Component references site root path; standalone preview assets missing | Inline the original SVG or copy correctly; verify images in both preview and export |
+| Few words but unclear | Small text has only phrases, no function and result | Complete sentences, appear earlier, time shots to reading speed |
+| Logo incomplete | Only used the icon's center symbol | Use the official rounded-rectangle app icon |
+| Frame extraction missing components | CSS transition/visibility competing with master timeline for state | Hook original animations to the master clock; when necessary, disable only the specific conflicting elements; seek forward and backward to verify |
+| Does not meet this release's requirements | URLs in browser and end credits | Remove URLs from fixtures, neutralize the address bar, remove end-credit links and their animations |
 
-静帧检查不能替代看节奏；框架 check 通过不能替代成片检查。社交封面按用户要求制作，方法见 [封面](cover.md)；没提时在交付时问一句，不默认扩展。
+Still-frame checks cannot replace rhythm review; framework checks passing cannot replace final film review. Social covers are made per user request; method see [Cover](cover.md); when not mentioned, ask at delivery rather than expanding scope by default.
 
-## 第二个项目的经验
+## Lessons from the Second Project
 
-中文宋体标题、装饰性英文标签、泛泛的完整句子和只有 BGM 的音轨暴露出默认值问题。具体做法分别见 [分镜与文案](story-and-copy.md) 与 [混音验收](audio-and-qa.md)，本文件保留案例背景。
+Chinese Song-typeface titles, decorative English labels, vague complete sentences, and a BGM-only audio track exposed default-value problems. Specific practices are in [Shot List & Copy](story-and-copy.md) and [Audio Mix QA](audio-and-qa.md) respectively; this file retains the case background.
 
-## 第三个项目：清单式迭代为什么变差
+## The Third Project: Why Checklist Iteration Got Worse
 
-同一个 CodePilot 仓库做过三版，对照很说明问题：
+The same CodePilot repo had three versions — the comparison is instructive:
 
-| 版本 | 做法 | 结果 |
+| Version | Approach | Result |
 |---|---|---|
-| 模型直接做（HyperFrames） | 先写 `frame.md` 视觉规范（字号阶梯、界面放大到 22px、边距、安全区），再给每个镜头写一份详细镜头说明，最后用 GSAP 逐镜头编排 | 节奏好、组件精细、文字动效到位 |
-| 按"12 个蓝图 + 动效原语 + 落拍/静止帧指标"迭代后的 skill | 每个镜头套一个蓝图名，用统一的 data 属性入场，靠指标验收 | 29/29 动作落拍、切点全在小节线上；画面却挤、字小、标题撞图标、界面大片空白 |
-| 本 skill 当前流程 | 先写 `DIRECTION.md`（参考拆解、产品气质、三个方向、画面规范、镜头表），真实组件按视频尺度上镜，GSAP 主时间轴 + Three.js/canvas 背景层，逐镜头出静帧，全片出联系表和转场条带 | 见下一节 |
+| Model builds directly (HyperFrames) | First wrote `frame.md` visual spec (type scale, UI scaled to 22px, margins, safe area), then wrote a detailed shot description for each shot, finally orchestrated shot by shot with GSAP | Good rhythm, refined components, text motion done right |
+| After iterating the skill with "12 blueprints + motion primitives + beat-hit/still-frame metrics" | Each shot mapped to a blueprint name, uniform data-attribute entrances, metric-based acceptance | 29/29 actions on beat, all cuts on bar lines; but the visuals were cramped, text small, titles colliding with icons, large blank areas in the UI |
+| This skill's current workflow | First write `DIRECTION.md` (reference teardown, product character, three directions, frame design system, shot table), real components on camera at video scale, GSAP master timeline + Three.js/canvas background layer, still frames per shot, full-film contact sheet and transition strip | See next section |
 
-教训：**模型会去满足能量化的东西。** 把"好看"压缩成蓝图名和指标，就会得到指标完美、画面平庸的片子。让质量落地的是写代码之前的设计：规范写成具体数字，镜头写到每一秒。
+Lesson: **The model will satisfy what can be quantized.** Compressing "looks good" into blueprint names and metrics yields a film with perfect numbers and mediocre visuals. What lands quality is the design done before writing code: specs written as concrete numbers, shots written down to every second.
 
-## CodePilot 影片：手法是怎么从产品推导出来的
+## CodePilot Film: How Techniques Were Derived from the Product
 
-50 秒，暗色舞台。两个参考视频（Hero UI 品牌片、Talis 发布片）拆出来的是做法：星空穿越、构造线画标志、产品从发光地平线后升起、章节大字、切片错位、伪 3D。颜色没有照搬，因为 CodePilot 是炭黑单色。
+50 seconds, dark stage. Two reference videos (Hero UI brand film, Talis launch film) yielded techniques, not copies: starfield flythrough, construction lines drawing the logo, product rising behind a glowing horizon, section title cards, slice offsets, pseudo-3D. Colors were not copied because CodePilot is charcoal monochrome.
 
-| 手法 | 因为 CodePilot 有…… |
+| Technique | Because CodePilot has… |
 |---|---|
-| 流线场开场，配"今天用 Claude / GPT / Gemini……"轮换 | 用户在多个模型之间来回换，这是它要解决的痛点 |
-| 粒子汇聚进 5×5 点阵的每一格 | 标志本身就是渐隐的点阵，取的是真实 SVG 的几何和透明度 |
-| 银白光弧，只有极淡的色边 | 单色品牌，有暗色主题 |
-| 暗色真实界面放大 1.6–2 倍，带小角度透视 | 产品有完整的暗色主题；Agent 对话、审批、模型选择都是真实组件的真实交互 |
-| 服务商图标环绕输入框 | 预设里有 17+ 家服务商（数量来自 README，图标来自产品依赖） |
-| 插件页平放成看板，镜头飞越，技能卡沿 Z 轴抬起 | 技能和 MCP 是一整页卡片 |
-| 产品源码组成的字符场 | 面向开发者的工具 |
-| 章节词 Ask / Switch / Extend | 三个核心能力正好是三个动词 |
+| Stream-line field opening with "Use Claude / GPT / Gemini today…" rotation | Users switch between multiple models — that is the pain point it solves |
+| Particles converging into each cell of a 5×5 dot matrix | The logo itself is a fading dot matrix — taken from the real SVG's geometry and opacity |
+| Silver-white light arcs with only the faintest color fringe | Monochrome brand with a dark theme |
+| Dark real UI scaled 1.6–2× with slight perspective | The product has a complete dark theme; Agent conversations, approvals, model selection are all real interactions in real components |
+| Provider icons orbiting the input field | Presets include 17+ providers (count from README, icons from product dependencies) |
+| Plugin page laid flat as a kanban board, camera flies over, skill cards lift along the Z axis | Skills and MCP are a full page of cards |
+| Character field composed of product source code | A developer-facing tool |
+| Section words Ask / Switch / Extend | Three core capabilities that happen to be three verbs |
 
-配乐是代码合成的 F 小调电子乐（`assets/audio/score-example-cinematic.py`），段落按镜头边界编排；音效用本机 media-use 库里的 Pixabay 录音，落点逐个实测。
+Score is code-synthesized F minor electronic music (`assets/audio/score-example-cinematic.py`), sections arranged per shot boundaries; SFX uses Pixabay recordings from the local media-use library, landing points measured individually.
 
-**这张表是一次推导的例子，不是模板。** 换一个产品，这些手法大多不成立：没有点阵标志就不该做粒子汇聚，浅色、纸感的产品不该用发光地平线，只接一两个服务的产品不该做环绕。照着 [影片方向](direction.md) 从新产品重新推导；同一工作区连续做片时，开场、章节和背景手法要换掉。
+**This table is one derivation example, not a template.** For a different product, most of these techniques would not hold: no dot-matrix logo means no particle convergence; a light, paper-textured product should not use a glowing horizon; a product integrating only one or two services should not do an orbit. Derive fresh from the new product following [Film Direction](direction.md); when making films consecutively in the same workspace, change the opening, section, and background techniques.
 
-做这支片子时遇到的具体坑（弹层 portal、3D 下推近落点、浅深切换发灰、标点单独掉行、GSAP 时间轴是 thenable）已写进 [组件接入](component-pipeline.md)、[起步工程](starter.md) 和 [审片](review.md)。
+Specific pitfalls encountered making this film (overlay portals, zoom landing points under 3D, gray flash on light-to-dark cuts, orphaned punctuation on line breaks, GSAP timeline being thenable) have been written into [Component Pipeline](component-pipeline.md), [Starter Project](starter.md), and [Review](review.md).
