@@ -60,8 +60,8 @@ Use `--engine hyperframes` for HyperFrames projects. A new project includes a 10
 
 **Software updated — time to make the promo video too.**
 
-[![GitHub stars](https://img.shields.io/github/stars/op7418/guizang-product-video-skill?style=flat-square)](https://github.com/op7418/guizang-product-video-skill/stargazers)
-[![License](https://img.shields.io/github/license/op7418/guizang-product-video-skill?style=flat-square)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/mamjed/guizang-product-video-skill-en?style=flat-square)](https://github.com/mamjed/guizang-product-video-skill-en/stargazers)
+[![License](https://img.shields.io/github/license/mamjed/guizang-product-video-skill-en?style=flat-square)](LICENSE)
 ![Agent Skill](https://img.shields.io/badge/Agent-Skill-252525?style=flat-square)
 ![Claude Code](https://img.shields.io/badge/Claude-Code-D97757?style=flat-square)
 ![Codex](https://img.shields.io/badge/Codex-supported-252525?style=flat-square)
@@ -79,7 +79,7 @@ I distilled the workflow I refined while making CodePilot promo videos into this
 Install in the terminal:
 
 ```bash
-npx skills add https://github.com/op7418/guizang-product-video-skill --skill guizang-product-video-skill
+npx skills add https://github.com/mamjed/guizang-product-video-skill-en --skill guizang-product-video-skill
 ```
 
 Then open your product codebase and tell your AI coding tool that supports skills:
@@ -88,7 +88,7 @@ Then open your product codebase and tell your AI coding tool that supports skill
 
 Or send the repo URL directly:
 
-> Install this skill for me: https://github.com/op7418/guizang-product-video-skill, then use it to make a release update promo video for the current project.
+> Install this skill for me: https://github.com/mamjed/guizang-product-video-skill-en, then use it to make a release update promo video for the current project.
 
 First use checks Node.js, Python, FFmpeg, and rendering dependencies; installs whatever is missing via the official method. System software installation still follows your tool and system permission settings.
 
@@ -193,7 +193,7 @@ Automated checks catch some structure, file, and timeline issues; whether the co
 ### Install with the skills CLI
 
 ```bash
-npx skills add https://github.com/op7418/guizang-product-video-skill --skill guizang-product-video-skill
+npx skills add https://github.com/mamjed/guizang-product-video-skill-en --skill guizang-product-video-skill
 ```
 
 Follow the prompts to choose your AI tool and install scope. To update, ask the AI to check this repo and update the installed skill; if you've changed files locally, keep your changes first.
@@ -204,7 +204,7 @@ Follow the prompts to choose your AI tool and install scope. To update, ask the 
 
 ```bash
 mkdir -p ~/.agents/skills
-git clone https://github.com/op7418/guizang-product-video-skill.git \
+git clone https://github.com/mamjed/guizang-product-video-skill-en.git \
   ~/.agents/skills/guizang-product-video-skill
 ```
 
@@ -212,7 +212,7 @@ git clone https://github.com/op7418/guizang-product-video-skill.git \
 
 ```bash
 mkdir -p ~/.claude/skills
-git clone https://github.com/op7418/guizang-product-video-skill.git \
+git clone https://github.com/mamjed/guizang-product-video-skill-en.git \
   ~/.claude/skills/guizang-product-video-skill
 ```
 
@@ -289,7 +289,7 @@ Yes — give the assets and requirements to the AI. Reference videos are used to
 
 ## Feedback and improvements
 
-Share your work, issues, and improvement suggestions on [Issues](https://github.com/op7418/guizang-product-video-skill/issues). When reporting, include the AI tool used, product tech stack, failure stage, and redacted logs or frames.
+Share your work, issues, and improvement suggestions on [Issues](https://github.com/mamjed/guizang-product-video-skill-en/issues). When reporting, include the AI tool used, product tech stack, failure stage, and redacted logs or frames.
 
 If you also want AI to help with image and text content, check out the [Guizang social media card skill](https://github.com/op7418/guizang-social-card-skill).
 
