@@ -17,7 +17,7 @@ Using the "claim → proof" structure as an example, reference sections:
 
 Shot variety comes from "where should the audience look": single component zoomed, left-right dialogue, focus on input area, workspace expanding, pure large type, a few parallel cards. Not from random transitions creating a sense of busyness.
 
-## Chinese Copy Should Sound Human
+## Copy Should Sound Human
 
 - Titles can be short; small text must not be reduced to just keywords.
 - Small text should have subject/action/result so the audience understands the change on first read.
@@ -35,17 +35,17 @@ Examples:
 
 These sentences are writing examples for CodePilot only — they cannot be applied directly to products without these features.
 
-## Division of Labor Between Chinese and English Titles
+## Division of Labor Between Headline and Body Copy
 
-Default: short English title + clear Chinese sentence; both sit at the primary visual level. English distills the capability/action; Chinese ensures immediate comprehension. English uses meaningful phrases chosen per feature.
+Default: short headline + clear body sentence; both sit at the primary visual level. The headline distills the capability/action; the body ensures immediate comprehension. Headlines use meaningful phrases chosen per feature.
 
-- Chinese titles and body text use a unified sans-serif system; weight/size distinguish hierarchy.
-- English in a separate span with `--film-font-en`; Chinese in a separate span with `--film-font-zh`. English can use a distinctive serif; Chinese uses a clean sans-serif; or pick two matching sans-serifs per brand. **Assigning fonts to Chinese and English separately does not mean letting font fallback randomly assign glyphs.**
-- Main title cards can use large English + medium Chinese title; component pages can place short English above the Chinese title — it should still be prominent enough. Not every small button needs bilingual translation.
-- English must fit the feature; don't mechanically translate long Chinese sentences, don't force unrelated slogans for layout. Chinese descriptions must stand alone even for audiences who don't read English.
+- Body text uses a unified sans-serif system; weight/size distinguish hierarchy.
+- Headlines in a separate span with `--film-font-headline`; body in a separate span with `--film-font-body`. Headlines can use a distinctive serif; body uses a clean sans-serif; or pick two matching sans-serifs per brand. **Assigning fonts to headlines and body separately does not mean letting font fallback randomly assign glyphs.**
+- Main title cards can use large headline + medium body title; component pages can place short headline above the body — it should still be prominent enough. Not every small button needs a label.
+- Headlines must fit the feature; don't mechanically pad short descriptions, don't force unrelated slogans for layout. Body copy must stand alone and be immediately understandable.
 - Font choices come from product design or available licensed fonts; system fonts are for technical preview only. Production projects freeze font assets and verify actual glyphs. Don't judge font loading by CSS font-family name alone.
 
-| English Title | Chinese Title | Chinese Description (when the feature genuinely exists) |
+| Headline | Body Copy | Description (when the feature genuinely exists) |
 | --- | --- | --- |
 | Switch models | Switch models, keep chatting | After switching models, the previous conversation carries over — no need to re-explain everything. |
 | Browse here | Web pages open right beside you | Open web pages inside the app — chat and view page content side by side. |
@@ -59,7 +59,7 @@ Execute per feature, write results to `evidence/copy-review.md`:
 
 1. Write the plain-language fact first: "what you had to do before, what you do now, how the result differs." Write only what has a source; don't fabricate a before/after comparison if you don't know the previous behavior.
 2. Distill a title from it, then write the description. The description must state **target + action + observable result**, adding usage context when needed; length is whatever it takes to be clear.
-3. Cover the screenshots and English, read only the Chinese to someone who has never used the product. If you still need to ask "what connected? Where do you see it? What happens?" — rewrite.
+3. Cover the screenshots and read only the body copy to someone who has never used the product. If you still need to ask "what connected? Where do you see it? What happens?" — rewrite.
 4. Check whether the title and description are just synonymous repetition; the description should add action or result, not praise the product again.
 5. Read aloud in natural conversational tone, then check subtitle display time. Don't substitute "enough characters" or "has a period" for content review.
 
@@ -78,11 +78,11 @@ Additional counter-examples:
 - Entrance/select/switch actions typically 0.25–0.6 seconds; give actions a clear start and end.
 - Each shot generally follows "establish frame → core action → readable result → cut away." Don't have everything float in together then sit still for 5 seconds.
 - Description text appears early so reading time overlaps with the component demo. Don't solve long sentences by shrinking font size — prefer cutting filler, splitting sentences, or adding dwell time.
-- ~6–9 Chinese characters per second as a rough warning threshold. Leave additional margin when the UI has complex changes happening simultaneously; this is a human-reading starting point, not a pass threshold.
+- ~150–200 words per minute as a rough warning threshold for on-screen text readability. Leave additional margin when the UI has complex changes happening simultaneously; this is a human-reading starting point, not a pass threshold.
 - Start composing at 110–125 BPM; beat interval ≈ `60 / BPM` seconds. Main actions land on strong beats, small actions offset by half a beat. Don't force-quantize every clip to the same length.
 - Blank or completely still frames aren't inherently wrong: brief pauses serve emphasis/reading. Beware long pauses with no information; don't add meaningless motion just to defeat stillness detection.
 - The ending needs a complete logo lockup and sound resolution. When there's no website link, leave just the product name/logo and one closing line.
 
 ## Still Frame Review
 
-Capture representative shots from actual code, arrange them in playback order as a contact sheet. Check for: variation in visual scale, whether the hierarchy is immediately clear, whether descriptions remain readable when shrunk to phone width, and whether any Chinese description has a character or punctuation that dropped to the next line alone. Passing still-frame review only proves layout direction; pacing, motion continuity, and sound still require watching the finished film — see [review](review.md).
+Capture representative shots from actual code, arrange them in playback order as a contact sheet. Check for: variation in visual scale, whether the hierarchy is immediately clear, whether descriptions remain readable when shrunk to phone width, and whether any word or punctuation has wrapped awkwardly to the next line. Passing still-frame review only proves layout direction; pacing, motion continuity, and sound still require watching the finished film — see [review](review.md).

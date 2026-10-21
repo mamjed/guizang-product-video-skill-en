@@ -26,7 +26,7 @@ npx skills add https://github.com/mamjed/guizang-product-video-skill-en --skill 
 
 Then open your product codebase and tell your AI coding tool that supports skills:
 
-> Use guizang-product-video-skill to make a promo video from the major updates in this project over the last three weeks. Landscape, 45–60 seconds, Chinese. First look at the codebase's own components and design style, show me a few key frames, then continue with animation and sound.
+> Use guizang-product-video-skill to make a promo video from the major updates in this project over the last three weeks. Landscape, 45–60 seconds, English. First look at the codebase's own components and design style, show me a few key frames, then continue with animation and sound.
 
 Or send the repo URL directly:
 
@@ -61,7 +61,7 @@ On the first film, the AI confirms the style first. Choices already made carry o
 
 All three modes use real product components for feature shots. The fallback style handles outer layout and visual packaging; when a platform or framework limits connection, it explains why and what the substitute is.
 
-English titles and Chinese descriptions specify fonts separately. English handles rhythm and typography; Chinese makes things clear; you can also request all-Chinese or all-English directly.
+Titles and descriptions specify fonts separately. The headline font handles rhythm and typography; the body font keeps things clear. You can also request a single font for everything or separate fonts for headings and body.
 
 ## How to brief it for a good first pass?
 
@@ -69,7 +69,7 @@ You don't need a long brief — just say **what to introduce, who it's for, and 
 
 **Make a release update video**
 
-> Introduce the major updates from v2.1 to v2.4, prioritizing multi-model switching, file preview, and browser actions. Post to Bilibili, landscape, about 50 seconds. Use our product design; keep the copy conversational, don't just read out commit messages one by one.
+> Introduce the major updates from v2.1 to v2.4, prioritizing multi-model switching, file preview, and browser actions. Post to YouTube, landscape, about 50 seconds. Use our product design; keep the copy conversational, don't just read out commit messages one by one.
 
 **For overseas users**
 
@@ -77,7 +77,7 @@ You don't need a long brief — just say **what to introduce, who it's for, and 
 
 **See the direction before the full film**
 
-> First organize selling points, storyboard, and four real-rendered key frames. Use the default CodePilot style, Chinese with English titles, wait for my confirmation before doing the full animation.
+> First organize selling points, storyboard, and four real-rendered key frames. Use the default CodePilot style, English copy with bold headlines, wait for my confirmation before doing the full animation.
 
 **Modify an existing film**
 
@@ -109,7 +109,7 @@ The three films below use the same workflow but look and sound completely differ
 
 When making consecutive films in the same workspace, the opening, transitions, and background devices also change from the previous film.
 
-The default starting point is **45–60 seconds, landscape, Chinese**. You can adjust duration and aspect ratio; portrait needs different framing and text layout — it usually doesn't just crop the sides.
+The default starting point is **45–60 seconds, landscape, English**. You can adjust duration and aspect ratio; portrait needs different framing and text layout — it usually doesn't just crop the sides.
 
 ## Where does the music and sound come from?
 
@@ -173,7 +173,7 @@ The bundled starter project uses React, esbuild, and Playwright for visuals, the
 | Node.js ≥ 22, npm | Build components, run browser rendering tools |
 | Python ≥ 3.9 | Project initialization, environment check, score and mix scripts |
 | FFmpeg / ffprobe | Audio processing, video encoding, file inspection |
-| Playwright Chromium | Still-frame and frame-by-frame rendering in the built-in browser pipeline (WebGL via SwiftShader) |
+| Playwright (Chromium or CLI) | Still-frame and frame-by-frame rendering via the built-in browser pipeline or Playwright CLI (WebGL via SwiftShader) |
 | React, GSAP, Three.js | Mount real components, main timeline animation, background effect layers (installed in the video project) |
 | Product repo and its dependencies | Connect real components and styles directly |
 

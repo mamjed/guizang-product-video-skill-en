@@ -6,7 +6,7 @@ First confirm the style and initialize the video directory, then run `check_envi
 
 | Path | Required environment |
 | --- | --- |
-| Starter project | Python ≥3.9, Node ≥22, npm, FFmpeg/FFprobe; project-local React, ReactDOM, esbuild, GSAP, Three.js, Playwright and its launchable Chromium |
+| Starter project | Python ≥3.9, Node ≥22, npm, FFmpeg/FFprobe; project-local React, ReactDOM, esbuild, GSAP, Three.js, Playwright and its launchable Chromium, or Playwright CLI |
 | Code-original score (optional) | When using scripts like `score-example-cinematic.py` that depend on numpy/scipy/soundfile, install in a venv inside the video project — not into system Python |
 | HyperFrames | Corresponding version's official runtime requirements, FFmpeg/FFprobe, launchable Chrome; this skill's audio scripts need Python |
 | Other existing frameworks | Keep the framework and lockfile, fill in only what it actually lacks |

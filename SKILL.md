@@ -10,11 +10,11 @@ Use real components to clearly present a software product or an update, so that 
 
 ## Workflow
 
-1. **Confirm scope, platform, and style.** For an existing project, keep the brief and user decisions; only handle the current changes. For a new film, fill in: product/repo, distribution channel, duration and aspect ratio, language, whether links are allowed, and whether the user has reference videos. **Scope and product platform surface must be decided by the user** — the repo can only list what versions exist, not what the user wants to promote: all product versions, the latest release cycle, or a specific version range? Which platform surfaces (desktop / CLI·TUI / mobile / server-side API)? If unspecified, ask once; write the answer into `plan.json` under `scope` (e.g. `{"versions":"v0.10.12..v0.11.0","platforms":["cli-tui"]}`) and sync it into BRIEF. If style is undecided, ask once: "Use the codebase's own design style (recommended), or the default warm-white / charcoal-black style?" `repo` uses the product design; `default` wraps content in the fallback style; `hybrid` keeps product identity while adjusting outer layout. Common starting point: landscape, 45–60 seconds, Chinese.
+1. **Confirm scope, platform, and style.** For an existing project, keep the brief and user decisions; only handle the current changes. For a new film, fill in: product/repo, distribution channel, duration and aspect ratio, language, whether links are allowed, and whether the user has reference videos. **Scope and product platform surface must be decided by the user** — the repo can only list what versions exist, not what the user wants to promote: all product versions, the latest release cycle, or a specific version range? Which platform surfaces (desktop / CLI·TUI / mobile / server-side API)? If unspecified, ask once; write the answer into `plan.json` under `scope` (e.g. `{"versions":"v0.10.12..v0.11.0","platforms":["cli-tui"]}`) and sync it into BRIEF. If style is undecided, ask once: "Use the codebase's own design style (recommended), or the default warm-white / charcoal-black style?" `repo` uses the product design; `default` wraps content in the fallback style; `hybrid` keeps product identity while adjusting outer layout. Common starting point: landscape, 45–60 seconds, English.
 2. **Initialize and check the environment.** Initialize an isolated video directory via the tool entry points below, then run the environment check; load [dependency onboarding](references/onboarding.md) only for reported gaps, and re-check after installing. For existing projects, check directly without re-initializing.
 3. **Investigate the product, connect components.** Follow [repo and style audit](references/repo-and-style.md) to determine features, release status, and evidence; note the design language, dark theme, and product elements that can become motifs. Mount real business components in the browser: add providers, use fixtures for APIs, use real clicks and inputs for interactions, and scale up to video dimensions ([starter project](references/starter.md), [component pipeline](references/component-pipeline.md)). Connect one feature shot first and produce a still frame.
 4. **Set direction, write `DIRECTION.md`.** Follow [film direction](references/direction.md): deconstruct references, distill product character, propose three directions along different axes, pick one and document the reasoning; list 3–5 product-specific visual devices in "because the product has X, we use Y" form, and avoid devices from the previous film in the same workspace; write the frame design system as concrete numbers; build a shot list down to every second. When the user wants to see direction first, present three directions with 3–6 key still frames and wait for feedback; otherwise continue.
-5. **Build shot by shot.** Each shot = view component + builder (GSAP main timeline, `onRender` canvas layer, `onDrive` real interactions); timing is read only from `plan.json`. Choose visual devices from the [visual device vocabulary](references/visual-vocabulary.md) that can be derived from the product; adapt examples from `assets/fx-lab/` before using them. Produce a still frame after each shot and cross-check against the shot list ([review](references/review.md)).
+5. **Build shot by shot.** Each shot = view component + builder (GSAP main timeline, `onRender` canvas layer, `onDrive` real interactions); timing is read only from `plan.json`. Choose visual devices from the [visual device vocabulary](references/visual-vocabulary.md) that can be derived from the product; adapt examples from `assets/fx-lab/` before using them. Produce a still frame after each shot and cross-check against the shot list ([review](references/review.md)). **When writing GSAP code, load the `gsap-core` skill for API correctness, `gsap-timeline` for sequencing, `gsap-performance` for optimization, and `gsap-react` if the product uses React. When writing Three.js code, load the `threejs-animation` skill for keyframe, morph-target, and procedural motion patterns.**
 6. **Score and sound effects.** Follow [audio sourcing](references/audio-sourcing.md) to choose a music source (user-provided → locally available generation model → code-synthesized); derive arrangement from shot boundaries, derive timbre from product character; use recorded samples for SFX first, fill gaps with bundled WAV files. Use `sfx_landmarks.py` to measure hit points and levels; synchronize, duck, and mix according to [audio and QA](references/audio-and-qa.md).
 7. **Review and deliver.** Export the full film; inspect the 2 fps contact sheet, 10 fps strips for each transition, and full-size frames for information-dense shots; revise per [review](references/review.md) and re-export. Run `check_delivery.py` (`pacing` only suggests which segment to check). Deliver MP4, a reproducible project, and a few previews; state clearly which items passed automated checks, which were actually watched/listened to, and which remain unverified. For publishing, create 3:4 / 4:3 / 16:9 covers per [cover](references/cover.md); if the user hasn't mentioned it, ask with a single sentence. For historical issues, consult [case study](references/case-study.md).
 
@@ -24,7 +24,7 @@ Use real components to clearly present a software product or an update, so that 
 - **Real components, video scale.** Feature shots connect to actual business components with original styles and states; interface body text must be ≥ 22px (1080p) in the final film. Abstraction is used only for framing, layout, and outer animation. When a platform genuinely cannot be connected, document the obstacle and the substitute approach, respecting existing authorization.
 - **Direction first, code second.** A production film must have `DIRECTION.md`: the chosen direction and reasoning, product-derived visual devices, frame design system, and shot list.
 - **No templates.** Every visual device must be traceable to a specific product attribute. Case studies and fx-lab are derivation examples, not style packs; when making consecutive films in the same workspace, do not reuse the previous film's opening, chapter, or background devices verbatim. Within a film, also avoid giving all elements the same entrance or the same transition.
-- **Clear typography.** Promo titles default to one English span and one Chinese span, each with its own font; Chinese uses sans-serif. Chinese copy states the object, action, and result. Fonts inside the product keep their original design; user-specified language/font takes priority.
+- **Clear typography.** Promo titles default to a headline span and a body span, each with its own font; body text uses sans-serif. Copy states the object, action, and result. Fonts inside the product keep their original design; user-specified font takes priority.
 - **First frame is a complete image.** When no separate cover is uploaded, platforms like X / Threads grab the first frame as the thumbnail. Therefore the first 5–10 frames of the film must show a complete image, typically the finished state of the opening segment; then fade out and let the opening animation play normally. The first frame must not be a blank background or a waiting-to-animate backdrop. `check_delivery.py` tests the first 5 frames.
 - **Complete sound.** Default music and individual action SFX both go into the audio track; key feedback is audible and synchronized with visuals. When the user requests silence or omits SFX, record `audioExceptionReason`.
 - **Isolated project.** Source code adaptation, display dependencies, and build config go in the video project; the original product code and dependencies are untouched.
@@ -84,7 +84,7 @@ npx skills add https://github.com/mamjed/guizang-product-video-skill-en --skill 
 
 Then open your product codebase and tell your AI coding tool that supports skills:
 
-> Use guizang-product-video-skill to make a promo video from the major updates in this project over the last three weeks. Landscape, 45–60 seconds, Chinese. First look at the codebase's own components and design style, show me a few key frames, then continue with animation and sound.
+> Use guizang-product-video-skill to make a promo video from the major updates in this project over the last three weeks. Landscape, 45–60 seconds, English. First look at the codebase's own components and design style, show me a few key frames, then continue with animation and sound.
 
 Or send the repo URL directly:
 
@@ -119,7 +119,7 @@ On the first film, the AI confirms the style first. Choices already made carry o
 
 All three modes use real product components for feature shots. The fallback style handles outer layout and visual packaging; when a platform or framework limits connection, it explains why and what the substitute is.
 
-English titles and Chinese descriptions specify fonts separately. English handles rhythm and typography; Chinese makes things clear; you can also request all-Chinese or all-English directly.
+Titles and descriptions specify fonts separately. The headline font handles rhythm and typography; the body font keeps things clear. You can also request a single font for everything or separate fonts for headings and body.
 
 ## How to brief it for a good first pass?
 
@@ -127,7 +127,7 @@ You don't need a long brief — just say **what to introduce, who it's for, and 
 
 **Make a release update video**
 
-> Introduce the major updates from v2.1 to v2.4, prioritizing multi-model switching, file preview, and browser actions. Post to Bilibili, landscape, about 50 seconds. Use our product design; keep the copy conversational, don't just read out commit messages one by one.
+> Introduce the major updates from v2.1 to v2.4, prioritizing multi-model switching, file preview, and browser actions. Post to YouTube, landscape, about 50 seconds. Use our product design; keep the copy conversational, don't just read out commit messages one by one.
 
 **For overseas users**
 
@@ -135,7 +135,7 @@ You don't need a long brief — just say **what to introduce, who it's for, and 
 
 **See the direction before the full film**
 
-> First organize selling points, storyboard, and four real-rendered key frames. Use the default CodePilot style, Chinese with English titles, wait for my confirmation before doing the full animation.
+> First organize selling points, storyboard, and four real-rendered key frames. Use the default CodePilot style, English copy with bold headlines, wait for my confirmation before doing the full animation.
 
 **Modify an existing film**
 
@@ -167,7 +167,7 @@ The three films below use the same workflow but look and sound completely differ
 
 When making consecutive films in the same workspace, the opening, transitions, and background devices also change from the previous film.
 
-The default starting point is **45–60 seconds, landscape, Chinese**. You can adjust duration and aspect ratio; portrait needs different framing and text layout — it usually doesn't just crop the sides.
+The default starting point is **45–60 seconds, landscape, English**. You can adjust duration and aspect ratio; portrait needs different framing and text layout — it usually doesn't just crop the sides.
 
 ## Where does the music and sound come from?
 
@@ -231,7 +231,7 @@ The bundled starter project uses React, esbuild, and Playwright for visuals, the
 | Node.js ≥ 22, npm | Build components, run browser rendering tools |
 | Python ≥ 3.9 | Project initialization, environment check, score and mix scripts |
 | FFmpeg / ffprobe | Audio processing, video encoding, file inspection |
-| Playwright Chromium | Still-frame and frame-by-frame rendering in the built-in browser pipeline (WebGL via SwiftShader) |
+| Playwright (Chromium or CLI) | Still-frame and frame-by-frame rendering via the built-in browser pipeline or Playwright CLI (WebGL via SwiftShader) |
 | React, GSAP, Three.js | Mount real components, main timeline animation, background effect layers (installed in the video project) |
 | Product repo and its dependencies | Connect real components and styles directly |
 

@@ -72,7 +72,7 @@ Don't do long cross-dissolves between light and dark shots: a gray patch appears
 
 ## Technical Notes
 
-- **Three.js in headless export**: The starter project's `render.mjs` / `stills.mjs` already include SwiftShader parameters; set `preserveDrawingBuffer: true` on the renderer, pixel ratio 1.
+- **Three.js in headless export**: The starter project's `render.mjs` / `stills.mjs` already include SwiftShader parameters; set `preserveDrawingBuffer: true` on the renderer, pixel ratio 1. **Load `threejs-animation` for keyframe, morph-target, and procedural motion patterns.**
 - **One WebGL canvas per scene**, keep the whole film to 2–4 contexts; use CSS or 2D canvas for background layers instead of WebGL when possible.
-- **GSAP**: The main timeline is paused, driven by `seek`. `fromTo` writes start values at build time — build only after layout measurement is complete. Don't target nodes React will re-render; attach animations to a stable wrapper.
+- **GSAP**: The main timeline is paused, driven by `seek`. `fromTo` writes start values at build time — build only after layout measurement is complete. Don't target nodes React will re-render; attach animations to a stable wrapper. **Load `gsap-core` for API details, `gsap-timeline` for sequencing, `gsap-performance` for optimization rules.**
 - **CSS filters** (blur) and 3D transforms both work correctly in frame-by-frame capture, but large-area blur slows export; render a few frames first to estimate cost.

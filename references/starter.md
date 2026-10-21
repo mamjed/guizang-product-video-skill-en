@@ -68,6 +68,8 @@ export const buildAgent = tl => {
 - GSAP `fromTo` writes start values at build time, so measurement must happen before placing animations.
 - GSAP timelines are thenable: `await tl` waits for the timeline to finish, but a paused master timeline never ends. Builders can be async functions, but do not await the timeline itself.
 - Nodes that React re-renders or conditionally renders should not be direct GSAP targets: wrap them in a stable container to animate.
+- **GSAP skills to load when writing animation code:** `gsap-core` (API reference, easing, defaults, matchMedia), `gsap-timeline` (sequencing, position parameter, nesting), `gsap-performance` (prefer transforms, avoid layout thrashing, will-change), `gsap-react` (useGSAP hook, context cleanup) if the product uses React, `gsap-plugins` (ScrollTrigger, Flip, Draggable, SplitText) when needed.
+- **Three.js skills to load when writing 3D/background code:** `threejs-animation` (keyframe, skeletal, morph-target animation, procedural motion, clip blending).
 - Micro-animations in the product (motion/framer-motion, CSS transitions) compete with the film clock for state: `film.css` freezes CSS animations; products using motion libraries should enable `MotionGlobalConfig.skipAnimations` in `client.jsx`. For things that need to keep moving (spinning loading icons), set transforms by time in `onRender`.
 - Background effects can reference and adapt `assets/fx-lab/`, see [Visual Device Vocabulary](visual-vocabulary.md).
 
